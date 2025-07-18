@@ -76,6 +76,7 @@ export default function App() {
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           } else {
+            setLoading(null);
             return "The AI service is currently overloaded. Please try again in a few moments.";
           }
         }
@@ -88,6 +89,7 @@ export default function App() {
         
         const result = await response.json();
         if (result.candidates && result.candidates.length > 0 && result.candidates[0].content) {
+          setLoading(null);
           return result.candidates[0].content.parts[0].text.trim();
         } else {
           console.error("Unexpected API response structure:", result);
@@ -96,6 +98,7 @@ export default function App() {
       } catch (error) {
         if (attempt === maxRetries) {
           console.error("Error calling Gemini API:", error);
+          setLoading(null);
           return `Error: ${error.message}. Please check the console for details.`;
         }
         // If it's not the last attempt and it's a network error, retry
@@ -106,8 +109,6 @@ export default function App() {
         }
       }
     }
-
-    setLoading(null);
   };
 
   const clearOutputs = () => {
