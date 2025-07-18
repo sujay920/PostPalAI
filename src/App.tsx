@@ -33,6 +33,8 @@ export default function App() {
   const [topic, setTopic] = useState('');
   const [tone, setTone] = useState('Professional');
   const [post, setPost] = useState('');
+  const [elaborateInstructions, setElaborateInstructions] = useState('');
+  const [showElaborateInput, setShowElaborateInput] = useState(false);
   const [hashtags, setHashtags] = useState('');
   const [emojis, setEmojis] = useState('');
   const [critique, setCritique] = useState('');
@@ -160,9 +162,29 @@ export default function App() {
   const elaboratePost = async () => {
     if (!post) return;
     clearOutputs();
-    const prompt = `You are an expert content strategist. Take the following post and elaborate on it by adding more details, examples, insights, and depth while maintaining the same ${tone} tone. Make it more comprehensive and valuable to readers. Return only the elaborated post content:\n\n${post}`;
+    
+    let prompt;
+    if (elaborateInstructions.trim()) {
+      prompt = `You are an expert content strategist and editor. Take the following LinkedIn post and modify it based on these specific instructions: "${elaborateInstructions}"
+
+Guidelines for modification:
+- Follow the user's instructions precisely
+- Maintain a ${tone} tone unless instructed otherwise
+- Ensure factual accuracy and relevance
+- Keep the content engaging and LinkedIn-appropriate
+- Preserve the core message while incorporating requested changes
+- Return only the modified post content, no explanations
+
+Original post:
+${post}`;
+    } else {
+      prompt = `You are an expert content strategist. Take the following post and elaborate on it by adding more details, examples, insights, and depth while maintaining the same ${tone} tone. Make it more comprehensive and valuable to readers. Return only the elaborated post content:\n\n${post}`;
+    }
+    
     const elaboratedPost = await callGeminiAPI(prompt, 'elaborate');
     setPost(elaboratedPost);
+    setElaborateInstructions('');
+    setShowElaborateInput(false);
   }
 
   const createThread = async () => {
@@ -551,13 +573,71 @@ export default function App() {
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                       <ActionButton onClick={refinePost} loadingState="refine" icon={<RefineIcon />} className="secondary-button text-gray-300 hover:text-white">Refine</ActionButton>
-                      <ActionButton onClick={elaboratePost} loadingState="elaborate" icon={<ElaborateIcon />} className="secondary-button text-gray-300 hover:text-white">Elaborate</ActionButton>
+                      <ActionButton onClick={() => setShowElaborateInput(!showElaborateInput)} icon={<ElaborateIcon />} className="secondary-button text-gray-300 hover:text-white">Elaborate</ActionButton>
                       <ActionButton onClick={generateHashtags} loadingState="hashtags" icon={<HashIcon />} className="secondary-button text-gray-300 hover:text-white">Hashtags</ActionButton>
                       <ActionButton onClick={generateEmojis} loadingState="emojis" icon={<EmojiIcon />} className="secondary-button text-gray-300 hover:text-white">Emojis</ActionButton>
                       <ActionButton onClick={critiquePost} loadingState="critique" icon={<LightbulbIcon />} className="secondary-button text-gray-300 hover:text-white">Critique</ActionButton>
                       <ActionButton onClick={createThread} loadingState="thread" icon={<ThreadIcon />} className="secondary-button text-gray-300 hover:text-white">Thread</ActionButton>
                   </div>
 
+                  {showElaborateInput && (
+                    <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl animate-fade-in">
+                      <div className="flex items-center gap-3 mb-4">
+                        <ElaborateIcon className="w-5 h-5 text-yellow-400" />
+                        <h3 className="text-lg font-semibold text-gray-200">Customize Your Content</h3>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-300">
+                          Tell me how you'd like to modify your post:
+                        </label>
+                        <textarea
+                          value={elaborateInstructions}
+                          onChange={(e) => setElaborateInstructions(e.target.value)}
+                          placeholder="e.g., 'Make this more professional and add statistics', 'Remove technical jargon and focus on benefits', 'Make it shorter and more engaging', 'Add a personal story', etc."
+                          rows={3}
+                          className="w-full p-4 rounded-xl bg-gray-900/60 border border-gray-600/40 focus:border-yellow-500/50 focus:outline-none transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none"
+                        />
+                      </div>
+                      
+                      <div className="bg-gray-800/60 p-4 rounded-xl border border-gray-700/40">
+                        <h4 className="text-sm font-medium text-gray-300 mb-2">💡 Example Instructions:</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400">
+                          <div className="space-y-1">
+                            <p>• "Make this more professional"</p>
+                            <p>• "Add relevant statistics"</p>
+                            <p>• "Include a call-to-action"</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p>• "Make it more conversational"</p>
+                            <p>• "Focus on small businesses"</p>
+                            <p>• "Add a personal anecdote"</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3 pt-2">
+                        <ActionButton 
+                          onClick={elaboratePost} 
+                          loadingState="elaborate" 
+                          icon={<ElaborateIcon />} 
+                          className="primary-button text-white font-bold border-0 flex-1"
+                          disabled={!post}
+                        >
+                          {elaborateInstructions.trim() ? 'Apply Changes' : 'Elaborate Post'}
+                        </ActionButton>
+                        <button
+                          onClick={() => {
+                            setShowElaborateInput(false);
+                            setElaborateInstructions('');
+                          }}
+                          className="px-6 py-4 rounded-xl font-semibold text-gray-400 hover:text-gray-200 transition-colors duration-200 border border-gray-600/40 hover:border-gray-500/60"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-6">
                       <OutputCard title="Suggested Hashtags" loadingState="hashtags" content={hashtags}>
                          <div className="relative group">
