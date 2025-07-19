@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Moon, Sun, Sparkles, Zap, RefreshCw, Clock, ChevronDown } from 'lucide-react';
+import { Copy, Check, Moon, Sun, Sparkles, Zap, RefreshCw, Clock, ChevronDown, Image, Edit3 } from 'lucide-react';
 
 // Main App Component
 export default function App() {
   const [topic, setTopic] = useState('');
   const [tone, setTone] = useState('Professional');
   const [post, setPost] = useState('');
+  const [imagePrompt, setImagePrompt] = useState('');
   const [elaborateInstructions, setElaborateInstructions] = useState('');
-  const [showElaborateInput, setShowElaborateInput] = useState(false);
   const [hashtags, setHashtags] = useState('');
   const [emojis, setEmojis] = useState('');
   const [critique, setCritique] = useState('');
@@ -21,14 +21,16 @@ export default function App() {
   const [isTyping, setIsTyping] = useState(false);
 
   const tones = [
-    { value: 'Professional', emoji: '💼', preview: 'Formal, authoritative, business-focused' },
-    { value: 'Casual', emoji: '😊', preview: 'Relaxed, conversational, approachable' },
-    { value: 'Inspirational', emoji: '✨', preview: 'Motivating, uplifting, encouraging' },
-    { value: 'Story-telling', emoji: '📖', preview: 'Narrative-driven, engaging, personal' },
-    { value: 'Witty', emoji: '😎', preview: 'Clever, humorous, entertaining' },
-    { value: 'Thought-provoking', emoji: '🤔', preview: 'Deep, analytical, discussion-starting' },
-    { value: 'Technical', emoji: '⚙️', preview: 'Detailed, precise, expert-level' },
-    { value: 'Bold', emoji: '🔥', preview: 'Confident, assertive, attention-grabbing' }
+    { value: 'Professional', emoji: '💼', preview: 'Formal, authoritative, business-focused', color: 'from-blue-500 to-blue-600' },
+    { value: 'Casual', emoji: '😊', preview: 'Relaxed, conversational, approachable', color: 'from-green-500 to-green-600' },
+    { value: 'Inspirational', emoji: '✨', preview: 'Motivating, uplifting, encouraging', color: 'from-purple-500 to-purple-600' },
+    { value: 'Story-telling', emoji: '📖', preview: 'Narrative-driven, engaging, personal', color: 'from-amber-500 to-amber-600' },
+    { value: 'Witty', emoji: '😎', preview: 'Clever, humorous, entertaining', color: 'from-pink-500 to-pink-600' },
+    { value: 'Thought-provoking', emoji: '🤔', preview: 'Deep, analytical, discussion-starting', color: 'from-indigo-500 to-indigo-600' },
+    { value: 'Technical', emoji: '⚙️', preview: 'Detailed, precise, expert-level', color: 'from-gray-500 to-gray-600' },
+    { value: 'Bold', emoji: '🔥', preview: 'Confident, assertive, attention-grabbing', color: 'from-red-500 to-red-600' },
+    { value: 'Friendly', emoji: '🤗', preview: 'Warm, welcoming, personable', color: 'from-yellow-500 to-yellow-600' },
+    { value: 'Authoritative', emoji: '👑', preview: 'Expert, commanding, influential', color: 'from-violet-500 to-violet-600' }
   ];
 
   const callGeminiAPI = async (prompt, loadingState) => {
@@ -203,8 +205,6 @@ ${post}`;
     } else {
       setPost(elaboratedPost);
     }
-    setElaborateInstructions('');
-    setShowElaborateInput(false);
   }
 
   const createThread = async () => {
@@ -311,43 +311,46 @@ ${post}`;
     )
   }
 
-  const ToneDropdown = () => {
-    const [isOpen, setIsOpen] = useState(false);
+  const ScrollableToneSelector = () => {
     const selectedTone = tones.find(t => t.value === tone);
 
     return (
-      <div className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full p-5 rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 focus:border-orange-500/50 focus:outline-none transition-all duration-300 text-left flex items-center justify-between backdrop-blur-xl hover:border-gray-500/60"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{selectedTone?.emoji}</span>
-            <span className="text-gray-100 text-lg">{selectedTone?.value}</span>
-          </div>
-          <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-        
-        {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border border-gray-600/40 rounded-2xl shadow-2xl z-50 overflow-hidden">
+      <div className="space-y-4">
+        <div className="text-sm font-semibold text-gray-300 tracking-wider uppercase flex items-center gap-2">
+          <span className="text-lg">🎭</span>
+          Tone Selection
+        </div>
+        <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 rounded-2xl p-4 backdrop-blur-xl">
+          <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
             {tones.map((toneOption) => (
               <button
                 key={toneOption.value}
-                onClick={() => {
-                  setTone(toneOption.value);
-                  setIsOpen(false);
-                }}
-                className="w-full p-4 text-left hover:bg-gray-700/50 transition-all duration-200 flex items-center gap-3 group"
+                onClick={() => setTone(toneOption.value)}
+                className={`p-3 rounded-xl text-left transition-all duration-300 group border-2 ${
+                  tone === toneOption.value
+                    ? `bg-gradient-to-r ${toneOption.color} border-white/30 shadow-lg`
+                    : 'bg-gray-800/60 border-gray-600/40 hover:border-gray-500/60 hover:bg-gray-700/60'
+                }`}
               >
-                <span className="text-xl group-hover:scale-110 transition-transform duration-200">{toneOption.emoji}</span>
-                <div>
-                  <div className="text-gray-100 font-medium">{toneOption.value}</div>
-                  <div className="text-gray-400 text-sm">{toneOption.preview}</div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-200">
+                    {toneOption.emoji}
+                  </span>
+                  <span className={`font-medium text-sm ${
+                    tone === toneOption.value ? 'text-white' : 'text-gray-200'
+                  }`}>
+                    {toneOption.value}
+                  </span>
+                </div>
+                <div className={`text-xs leading-tight ${
+                  tone === toneOption.value ? 'text-white/80' : 'text-gray-400'
+                }`}>
+                  {toneOption.preview}
                 </div>
               </button>
             ))}
           </div>
-        )}
+        </div>
       </div>
     );
   };
@@ -426,6 +429,11 @@ ${post}`;
         
         .glow-on-hover:hover {
           animation: glow-pulse 2s infinite;
+        }
+        
+        .purple-glow-hover:hover {
+          box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+          border-color: rgba(139, 92, 246, 0.6);
         }
         
         .typing-cursor::after {
@@ -548,10 +556,70 @@ ${post}`;
 
               <div className="space-y-4">
                 <label htmlFor="tone" className="block text-sm font-semibold text-gray-300 tracking-wider uppercase flex items-center gap-2">
-                  <span className="text-lg">🎭</span>
-                  Tone
+                  <Image className="w-4 h-4" />
+                  Image Prompt (Optional)
                 </label>
-                <ToneDropdown />
+                <input
+                  id="imagePrompt"
+                  type="text"
+                  value={imagePrompt}
+                  onChange={(e) => setImagePrompt(e.target.value)}
+                  placeholder="e.g., Professional office setting, modern workspace, team collaboration"
+                  className="w-full p-5 rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-500 hover:border-gray-500/60 purple-glow-hover"
+                />
+              </div>
+
+              <ScrollableToneSelector />
+
+              {/* Post Modification Section - Always Visible */}
+              <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300">
+                <div className="flex items-center gap-3 mb-4">
+                  <Edit3 className="w-5 h-5 text-purple-400" />
+                  <h3 className="text-lg font-semibold text-gray-200">Customize Your Content</h3>
+                </div>
+                
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-300">
+                    Tell me how you'd like to modify your post:
+                  </label>
+                  <textarea
+                    value={elaborateInstructions}
+                    onChange={(e) => setElaborateInstructions(e.target.value)}
+                    placeholder="e.g., 'Make this more professional and add statistics', 'Remove technical jargon and focus on benefits', 'Make it shorter and more engaging', 'Add a personal story', etc."
+                    rows={3}
+                    className="w-full p-4 rounded-xl bg-gray-900/60 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none backdrop-blur-sm purple-glow-hover"
+                  />
+                </div>
+                
+                <div className="bg-gray-800/60 p-4 rounded-xl border border-gray-700/40">
+                  <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                    <span className="text-lg">💡</span>
+                    Example Instructions:
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400">
+                    <div className="space-y-1">
+                      <p>• "Make this more professional"</p>
+                      <p>• "Add relevant statistics"</p>
+                      <p>• "Include a call-to-action"</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p>• "Make it more conversational"</p>
+                      <p>• "Focus on small businesses"</p>
+                      <p>• "Add a personal anecdote"</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <ActionButton 
+                  onClick={elaboratePost} 
+                  loadingState="elaborate" 
+                  icon={<Sparkles />} 
+                  variant="primary"
+                  className="w-full ripple purple-glow-hover"
+                  disabled={!post}
+                >
+                  {elaborateInstructions.trim() ? 'Apply Changes' : 'Elaborate Post'}
+                </ActionButton>
               </div>
             </div>
             
@@ -642,73 +710,10 @@ ${post}`;
 
                 <div className="grid grid-cols-2 gap-4">
                     <ActionButton onClick={refinePost} loadingState="refine" icon={<RefreshCw />}>Refine</ActionButton>
-                    <ActionButton onClick={() => setShowElaborateInput(!showElaborateInput)} icon={<Sparkles />}>Elaborate</ActionButton>
                     <ActionButton onClick={generateHashtags} loadingState="hashtags" icon={<span className="text-lg">#</span>}>Hashtags</ActionButton>
                     <ActionButton onClick={generateEmojis} loadingState="emojis" icon={<span className="text-lg">😊</span>}>Emojis</ActionButton>
+                    <ActionButton onClick={critiquePost} loadingState="critique" icon={<span className="text-lg">🔍</span>} className="purple-glow-hover">Critique</ActionButton>
                 </div>
-
-                {showElaborateInput && (
-                  <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl animate-fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Sparkles className="w-5 h-5 text-orange-400" />
-                      <h3 className="text-lg font-semibold text-gray-200">Customize Your Content</h3>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-300">
-                        Tell me how you'd like to modify your post:
-                      </label>
-                      <textarea
-                        value={elaborateInstructions}
-                        onChange={(e) => setElaborateInstructions(e.target.value)}
-                        placeholder="e.g., 'Make this more professional and add statistics', 'Remove technical jargon and focus on benefits', 'Make it shorter and more engaging', 'Add a personal story', etc."
-                        rows={3}
-                        className="w-full p-4 rounded-xl bg-gray-900/60 border border-gray-600/40 focus:border-orange-500/50 focus:outline-none transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none backdrop-blur-sm"
-                      />
-                    </div>
-                    
-                    <div className="bg-gray-800/60 p-4 rounded-xl border border-gray-700/40">
-                      <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                        <span className="text-lg">💡</span>
-                        Example Instructions:
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400">
-                        <div className="space-y-1">
-                          <p>• "Make this more professional"</p>
-                          <p>• "Add relevant statistics"</p>
-                          <p>• "Include a call-to-action"</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p>• "Make it more conversational"</p>
-                          <p>• "Focus on small businesses"</p>
-                          <p>• "Add a personal anecdote"</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-3 pt-2">
-                      <ActionButton 
-                        onClick={elaboratePost} 
-                        loadingState="elaborate" 
-                        icon={<Sparkles />} 
-                        variant="primary"
-                        className="flex-1 ripple"
-                        disabled={!post}
-                      >
-                        {elaborateInstructions.trim() ? 'Apply Changes' : 'Elaborate Post'}
-                      </ActionButton>
-                      <button
-                        onClick={() => {
-                          setShowElaborateInput(false);
-                          setElaborateInstructions('');
-                        }}
-                        className="px-6 py-4 rounded-xl font-semibold text-gray-400 hover:text-gray-200 transition-all duration-200 border border-gray-600/40 hover:border-gray-500/60 hover:scale-105"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 <div className="space-y-6">
                     <OutputCard title="Suggested Hashtags" loadingState="hashtags" content={hashtags}>
