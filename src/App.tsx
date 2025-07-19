@@ -371,33 +371,23 @@ ${post}`;
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
         
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-10px) rotate(1deg); }
-          66% { transform: translateY(5px) rotate(-1deg); }
+        /* Enhanced Animated Background */
+        .animated-gradient-bg {
+          background: linear-gradient(45deg, #FFD700, #FFA500, #FF8C00, #000000, #1a1a1a, #333333);
+          background-size: 400% 400%;
+          animation: gradientShift 6s ease-in-out infinite;
         }
         
-        @keyframes particle-float {
-          0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.4; }
-          50% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          25% { background-position: 100% 50%; }
+          50% { background-position: 100% 100%; }
+          75% { background-position: 0% 100%; }
+          100% { background-position: 0% 50%; }
         }
         
-        @keyframes fade-in {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes glow-pulse {
-          0%, 100% { box-shadow: 0 0 20px rgba(255, 165, 0, 0.3); }
-          50% { box-shadow: 0 0 40px rgba(255, 165, 0, 0.6), 0 0 60px rgba(255, 165, 0, 0.3); }
-        }
-        
-        @keyframes slide-up {
-          0% { opacity: 0; transform: translateY(30px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        .floating-particles::before {
+        /* Enhanced Floating Particles */
+        .enhanced-particles::before {
           content: '';
           position: fixed;
           top: 0;
@@ -405,16 +395,86 @@ ${post}`;
           width: 100%;
           height: 100%;
           background-image: 
-            radial-gradient(2px 2px at 20px 30px, rgba(255, 165, 0, 0.3), transparent),
-            radial-gradient(2px 2px at 40px 70px, rgba(255, 140, 0, 0.4), transparent),
-            radial-gradient(1px 1px at 90px 40px, rgba(255, 215, 0, 0.3), transparent),
-            radial-gradient(1px 1px at 130px 80px, rgba(255, 165, 0, 0.2), transparent),
-            radial-gradient(2px 2px at 160px 30px, rgba(255, 140, 0, 0.3), transparent);
+            radial-gradient(3px 3px at 20px 30px, rgba(255, 215, 0, 0.4), transparent),
+            radial-gradient(3px 3px at 40px 70px, rgba(255, 165, 0, 0.5), transparent),
+            radial-gradient(2px 2px at 90px 40px, rgba(255, 215, 0, 0.4), transparent),
+            radial-gradient(2px 2px at 130px 80px, rgba(255, 165, 0, 0.3), transparent),
+            radial-gradient(3px 3px at 160px 30px, rgba(255, 140, 0, 0.4), transparent),
+            radial-gradient(1px 1px at 200px 60px, rgba(255, 215, 0, 0.3), transparent);
           background-repeat: repeat;
-          background-size: 200px 100px;
-          animation: particle-float 20s infinite linear;
+          background-size: 250px 120px;
+          animation: enhancedParticleFloat 25s infinite linear;
           pointer-events: none;
           z-index: 1;
+        }
+        
+        @keyframes enhancedParticleFloat {
+          0% { transform: translateY(0px) translateX(0px); }
+          25% { transform: translateY(-30px) translateX(15px); }
+          50% { transform: translateY(-10px) translateX(-10px); }
+          75% { transform: translateY(-25px) translateX(20px); }
+          100% { transform: translateY(0px) translateX(0px); }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-10px) rotate(1deg); }
+          66% { transform: translateY(5px) rotate(-1deg); }
+        }
+        
+        @keyframes fade-in {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-in-left {
+          0% { opacity: 0; transform: translateX(-50px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slide-in-right {
+          0% { opacity: 0; transform: translateX(50px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes bounce-in {
+          0% { opacity: 0; transform: scale(0.3); }
+          50% { opacity: 1; transform: scale(1.05); }
+          70% { transform: scale(0.9); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes glow-pulse {
+          0%, 100% { 
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2);
+            transform: translateY(0px);
+          }
+          50% { 
+            box-shadow: 0 0 40px rgba(255, 165, 0, 0.7), 0 0 80px rgba(255, 215, 0, 0.4);
+            transform: translateY(-2px);
+          }
+        }
+        
+        @keyframes button-press {
+          0% { transform: scale(1); }
+          50% { transform: scale(0.95); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes input-focus-glow {
+          0% { box-shadow: 0 0 0 rgba(255, 165, 0, 0); }
+          100% { box-shadow: 0 0 20px rgba(255, 165, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.1); }
+        }
+        
+        @keyframes purple-glow-pulse {
+          0%, 100% { 
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+            transform: translateY(0px);
+          }
+          50% { 
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.6), 0 0 50px rgba(139, 92, 246, 0.2);
+            transform: translateY(-1px);
+          }
         }
         
         .glass-morphism {
@@ -430,8 +490,16 @@ ${post}`;
           animation: fade-in 0.8s ease-out;
         }
         
-        .animate-slide-up {
-          animation: slide-up 1s ease-out;
+        .animate-slide-in-left {
+          animation: slide-in-left 1s ease-out;
+        }
+        
+        .animate-slide-in-right {
+          animation: slide-in-right 1s ease-out;
+        }
+        
+        .animate-bounce-in {
+          animation: bounce-in 0.8s ease-out;
         }
         
         .floating-icon {
@@ -442,10 +510,27 @@ ${post}`;
           animation: glow-pulse 2s infinite;
         }
         
+        .enhanced-button-hover {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .enhanced-button-hover:hover {
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: 0 10px 30px rgba(255, 165, 0, 0.4), 0 0 50px rgba(255, 215, 0, 0.2);
+        }
+        
+        .enhanced-button-hover:active {
+          animation: button-press 0.2s ease-out;
+        }
+        
+        .enhanced-input-focus:focus {
+          animation: input-focus-glow 0.3s ease-out forwards;
+        }
+        
         .purple-glow-hover:hover {
-          box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+          animation: purple-glow-pulse 2s infinite;
           border-color: rgba(139, 92, 246, 0.6);
-          transform: translateY(-2px);
+          transform: translateY(-2px) scale(1.01);
         }
         
         .typing-cursor::after {
@@ -490,11 +575,11 @@ ${post}`;
         }
       `}</style>
       
-      <div className={`min-h-screen w-full transition-all duration-500 ${darkMode ? 'bg-black text-gray-100' : 'bg-gray-50 text-gray-900'} p-6 sm:p-8 lg:p-10 flex items-center justify-center overflow-hidden relative floating-particles`}>
+      <div className={`min-h-screen w-full transition-all duration-500 ${darkMode ? 'animated-gradient-bg text-gray-100' : 'bg-gray-50 text-gray-900'} p-6 sm:p-8 lg:p-10 flex items-center justify-center overflow-hidden relative enhanced-particles`}>
         {/* Theme Toggle */}
         <button
           onClick={() => setDarkMode(!darkMode)}
-          className="fixed top-6 right-6 z-50 p-4 rounded-2xl bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl border border-gray-600/40 hover:border-gray-500/60 transition-all duration-300 hover:scale-110"
+          className="fixed top-6 right-6 z-50 p-4 rounded-2xl bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl border border-gray-600/40 hover:border-gray-500/60 transition-all duration-300 hover:scale-110 enhanced-button-hover"
         >
           {darkMode ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-gray-600" />}
         </button>
@@ -502,7 +587,7 @@ ${post}`;
         {/* History Toggle */}
         <button
           onClick={() => setShowHistory(!showHistory)}
-          className="fixed top-6 left-6 z-50 p-4 rounded-2xl bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl border border-gray-600/40 hover:border-gray-500/60 transition-all duration-300 hover:scale-110"
+          className="fixed top-6 left-6 z-50 p-4 rounded-2xl bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl border border-gray-600/40 hover:border-gray-500/60 transition-all duration-300 hover:scale-110 enhanced-button-hover"
         >
           <Clock className="w-6 h-6 text-orange-400" />
         </button>
@@ -533,19 +618,19 @@ ${post}`;
           
         <main className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 z-10 relative">
           {/* Left Panel: Controls */}
-          <div className="space-y-8 p-10 sm:p-12 glass-morphism rounded-3xl relative group animate-fade-in">
+          <div className="space-y-8 p-10 sm:p-12 glass-morphism rounded-3xl relative group animate-slide-in-left">
             <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-yellow-500/5 to-orange-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
             <header className="relative z-10">
               <div className="flex items-center gap-5 mb-6">
-                <div className="p-4 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-2xl floating-icon">
+                <div className="p-4 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-2xl floating-icon animate-bounce-in">
                   <Zap className="w-8 h-8 text-orange-400" />
                 </div>
                 <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-300 bg-clip-text text-transparent tracking-tight cursor-default">
                   PostPal AI
                 </h1>
               </div>
-              <p className="text-gray-400 text-lg leading-relaxed font-medium animate-slide-up">
+              <p className="text-gray-400 text-lg leading-relaxed font-medium animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 Craft Compelling LinkedIn Content, <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent font-semibold">Instantly</span>.
               </p>
             </header>
@@ -562,7 +647,7 @@ ${post}`;
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="e.g., Announcing a product launch, discussing industry trends, sharing career insights"
-                  className="w-full p-5 rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 focus:border-orange-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-500 hover:border-gray-500/60"
+                  className="w-full p-5 rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 focus:border-orange-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-500 hover:border-gray-500/60 enhanced-input-focus"
                 />
               </div>
 
@@ -615,23 +700,23 @@ ${post}`;
               loadingState="post"
               icon={<Zap />}
               variant="primary"
-              className="ripple glow-on-hover text-lg font-bold py-6"
+              className="ripple glow-on-hover enhanced-button-hover text-lg font-bold py-6"
             >
               Generate Post
             </ActionButton>
           </div>
 
           {/* Right Panel: Output */}
-          <div className="space-y-8 p-10 sm:p-12 glass-morphism rounded-3xl relative group animate-fade-in">
+          <div className="space-y-8 p-10 sm:p-12 glass-morphism rounded-3xl relative group animate-slide-in-right">
             <div className="absolute inset-0 bg-gradient-to-l from-yellow-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent tracking-tight relative z-10 flex items-center gap-3">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent tracking-tight relative z-10 flex items-center gap-3 animate-bounce-in">
               <Sparkles className="w-8 h-8 text-orange-400" />
               Generated Content
             </h2>
             
             {loading === 'post' && (
-              <div className="flex flex-col items-center justify-center h-80 bg-gradient-to-br from-gray-900/40 to-gray-800/40 rounded-3xl border border-dashed border-gray-600/50 backdrop-blur-sm relative z-10">
+              <div className="flex flex-col items-center justify-center h-80 bg-gradient-to-br from-gray-900/40 to-gray-800/40 rounded-3xl border border-dashed border-gray-600/50 backdrop-blur-sm relative z-10 animate-fade-in">
                 <div className="relative">
                   <div className="w-16 h-16 border-4 border-gray-600 border-t-orange-500 rounded-full animate-spin"></div>
                   <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-yellow-500 rounded-full animate-spin" style={{ animationDelay: '0.15s', animationDuration: '1.5s' }}></div>
@@ -646,7 +731,7 @@ ${post}`;
             )}
 
             {!post && loading !== 'post' && (
-               <div className="flex flex-col items-center justify-center h-80 bg-gradient-to-br from-gray-900/30 to-gray-800/30 rounded-3xl border border-dashed border-gray-600/50 backdrop-blur-sm relative z-10 group">
+               <div className="flex flex-col items-center justify-center h-80 bg-gradient-to-br from-gray-900/30 to-gray-800/30 rounded-3xl border border-dashed border-gray-600/50 backdrop-blur-sm relative z-10 group animate-fade-in">
                 <div className="p-8 bg-gradient-to-br from-gray-700/20 to-gray-800/20 rounded-3xl mb-6 floating-icon">
                   <Zap className="w-20 h-20 text-gray-600 group-hover:text-gray-500 transition-colors duration-300"/>
                 </div>
@@ -655,7 +740,7 @@ ${post}`;
             )}
 
             {post && (
-              <div className="space-y-8 relative z-10 animate-fade-in">
+              <div className="space-y-8 relative z-10 animate-bounce-in">
                 <div className="relative group">
                   <textarea
                     value={post}
@@ -673,7 +758,7 @@ ${post}`;
                       </span>
                       <button 
                         onClick={() => copyToClipboard(post, 'post')} 
-                        className="flex items-center gap-2 hover:text-gray-200 transition-all duration-200 hover:scale-105 px-3 py-1 rounded-lg hover:bg-gray-700/50"
+                        className="flex items-center gap-2 hover:text-gray-200 transition-all duration-200 hover:scale-105 px-3 py-1 rounded-lg hover:bg-gray-700/50 enhanced-button-hover"
                       >
                         {copied === 'post' ? 
                           <Check className="w-4 h-4 text-orange-400" /> : 
@@ -686,7 +771,7 @@ ${post}`;
                       <button 
                         onClick={regeneratePost}
                         disabled={loading || !topic}
-                        className="flex items-center gap-2 hover:text-gray-200 transition-all duration-200 hover:scale-105 px-3 py-1 rounded-lg hover:bg-gray-700/50 disabled:opacity-50"
+                        className="flex items-center gap-2 hover:text-gray-200 transition-all duration-200 hover:scale-105 px-3 py-1 rounded-lg hover:bg-gray-700/50 disabled:opacity-50 enhanced-button-hover"
                       >
                         <RefreshCw className="w-4 h-4" />
                         <span className="font-medium">Regenerate</span>
@@ -694,16 +779,54 @@ ${post}`;
                   </div>
                 </div>
 
+                {/* Generate Image Prompt Section - Moved below generated post */}
+                <div className="space-y-4 p-6 bg-gradient-to-br from-black/95 to-gray-900/95 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Image className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-lg font-semibold text-gray-200">AI Image Prompt</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <textarea
+                      value={generatedImagePrompt || imagePrompt}
+                      onChange={(e) => {
+                        if (generatedImagePrompt) {
+                          setGeneratedImagePrompt(e.target.value);
+                        } else {
+                          setImagePrompt(e.target.value);
+                        }
+                      }}
+                      placeholder="AI will generate an image prompt based on your post content, or you can write your own..."
+                      rows={3}
+                      className="w-full p-5 rounded-2xl bg-gradient-to-br from-black/90 to-gray-900/90 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-400 hover:border-purple-400/60 purple-glow-hover resize-none enhanced-input-focus"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(17, 17, 17, 0.9) 50%, rgba(0, 0, 0, 0.95) 100%)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                      }}
+                    />
+                  </div>
+                  
+                  <ActionButton
+                    onClick={generateImagePrompt}
+                    disabled={loading}
+                    loadingState="imagePrompt"
+                    icon={<Sparkles />}
+                    className="purple-glow-hover enhanced-button-hover"
+                  >
+                    Generate AI Image Prompt
+                  </ActionButton>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
-                    <ActionButton onClick={refinePost} loadingState="refine" icon={<RefreshCw />}>Refine</ActionButton>
-                    <ActionButton onClick={generateHashtags} loadingState="hashtags" icon={<span className="text-lg">#</span>}>Hashtags</ActionButton>
-                    <ActionButton onClick={generateImagePrompt} loadingState="imagePrompt" icon={<Image />} className="purple-glow-hover">Image Prompt</ActionButton>
-                    <ActionButton onClick={generateEmojis} loadingState="emojis" icon={<span className="text-lg">😊</span>}>Emojis</ActionButton>
-                    <ActionButton onClick={critiquePost} loadingState="critique" icon={<span className="text-lg">🔍</span>} className="purple-glow-hover">Critique</ActionButton>
+                    <ActionButton onClick={refinePost} loadingState="refine" icon={<RefreshCw />} className="enhanced-button-hover">Refine</ActionButton>
+                    <ActionButton onClick={generateHashtags} loadingState="hashtags" icon={<span className="text-lg">#</span>} className="enhanced-button-hover">Hashtags</ActionButton>
+                    <ActionButton onClick={generateEmojis} loadingState="emojis" icon={<span className="text-lg">😊</span>} className="enhanced-button-hover">Emojis</ActionButton>
+                    <ActionButton onClick={critiquePost} loadingState="critique" icon={<span className="text-lg">🔍</span>} className="purple-glow-hover enhanced-button-hover">Critique</ActionButton>
                 </div>
 
                 {/* Post Modification Section - Appears Below Generated Post */}
-                <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in">
+                <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in enhanced-button-hover">
                   <div className="flex items-center gap-3 mb-4">
                     <Edit3 className="w-5 h-5 text-purple-400" />
                     <h3 className="text-lg font-semibold text-gray-200">Customize Your Content</h3>
@@ -718,7 +841,7 @@ ${post}`;
                       onChange={(e) => setElaborateInstructions(e.target.value)}
                       placeholder="e.g., 'Make this more professional and add statistics', 'Remove technical jargon and focus on benefits', 'Make it shorter and more engaging', 'Add a personal story', etc."
                       rows={3}
-                      className="w-full p-4 rounded-xl bg-gray-900/60 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none backdrop-blur-sm purple-glow-hover"
+                      className="w-full p-4 rounded-xl bg-gray-900/60 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none backdrop-blur-sm purple-glow-hover enhanced-input-focus"
                     />
                   </div>
                   
@@ -746,7 +869,7 @@ ${post}`;
                     loadingState="elaborate" 
                     icon={<Sparkles />} 
                     variant="primary"
-                    className="w-full ripple purple-glow-hover"
+                    className="w-full ripple purple-glow-hover enhanced-button-hover"
                     disabled={!post}
                   >
                     {elaborateInstructions.trim() ? 'Apply Changes' : 'Elaborate Post'}
@@ -758,7 +881,7 @@ ${post}`;
                           <p className="text-orange-400 font-mono text-base leading-relaxed pr-16 bg-gray-900/70 p-5 rounded-xl border border-gray-700/40">{hashtags}</p>
                           <button 
                             onClick={() => copyToClipboard(hashtags, 'hashtags')} 
-                            className="absolute top-4 right-4 flex items-center gap-2 text-xs text-gray-400 hover:text-white transition-all duration-200 hover:scale-105 bg-gray-800/90 px-3 py-2 rounded-lg"
+                            className="absolute top-4 right-4 flex items-center gap-2 text-xs text-gray-400 hover:text-white transition-all duration-200 hover:scale-105 bg-gray-800/90 px-3 py-2 rounded-lg enhanced-button-hover"
                           >
                               {copied === 'hashtags' ? <Check className="w-4 h-4 text-orange-400" /> : <Copy className="w-4 h-4" />}
                               <span className="font-medium">Copy</span>
