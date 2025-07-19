@@ -19,6 +19,7 @@ export default function App() {
   const [recentPosts, setRecentPosts] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [generatedImagePrompt, setGeneratedImagePrompt] = useState('');
 
   const tones = [
     { value: 'Professional', emoji: '💼', preview: 'Formal, authoritative, business-focused', color: 'from-blue-500 to-blue-600' },
@@ -168,6 +169,16 @@ export default function App() {
     } else {
       setPost(refinedPost);
     }
+  };
+
+  const generateImagePrompt = async () => {
+    if (!post) return;
+    const prompt = `You are an expert visual content strategist. Based on the following LinkedIn post content, generate a concise, professional image prompt that would create a relevant, high-quality visual to accompany this post. The image should be professional, engaging, and suitable for LinkedIn. Return only the image prompt description, no explanations.
+
+Post content:
+${post}`;
+    const generatedPrompt = await callGeminiAPI(prompt, 'imagePrompt');
+    setGeneratedImagePrompt(generatedPrompt);
   };
 
   const critiquePost = async () => {
@@ -434,6 +445,7 @@ ${post}`;
         .purple-glow-hover:hover {
           box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
           border-color: rgba(139, 92, 246, 0.6);
+          transform: translateY(-2px);
         }
         
         .typing-cursor::after {
@@ -557,16 +569,40 @@ ${post}`;
               <div className="space-y-4">
                 <label htmlFor="tone" className="block text-sm font-semibold text-gray-300 tracking-wider uppercase flex items-center gap-2">
                   <Image className="w-4 h-4" />
-                  Image Prompt (Optional)
+                  Image Prompt
                 </label>
-                <input
-                  id="imagePrompt"
-                  type="text"
-                  value={imagePrompt}
-                  onChange={(e) => setImagePrompt(e.target.value)}
-                  placeholder="e.g., Professional office setting, modern workspace, team collaboration"
-                  className="w-full p-5 rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-500 hover:border-gray-500/60 purple-glow-hover"
-                />
+                <div className="space-y-3">
+                  <textarea
+                    id="imagePrompt"
+                    value={generatedImagePrompt || imagePrompt}
+                    onChange={(e) => {
+                      if (generatedImagePrompt) {
+                        setGeneratedImagePrompt(e.target.value);
+                      } else {
+                        setImagePrompt(e.target.value);
+                      }
+                    }}
+                    placeholder="AI will generate an image prompt based on your post content, or you can write your own..."
+                    rows={3}
+                    className="w-full p-5 rounded-2xl bg-gradient-to-br from-black/90 to-gray-900/90 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-400 hover:border-purple-400/60 purple-glow-hover resize-none"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(17, 17, 17, 0.9) 50%, rgba(0, 0, 0, 0.95) 100%)',
+                      backdropFilter: 'blur(20px)',
+                      boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    }}
+                  />
+                  {post && (
+                    <ActionButton
+                      onClick={generateImagePrompt}
+                      disabled={loading}
+                      loadingState="imagePrompt"
+                      icon={<Sparkles />}
+                      className="purple-glow-hover"
+                    >
+                      Generate Image Prompt
+                    </ActionButton>
+                  )}
+                </div>
               </div>
 
               <ScrollableToneSelector />
@@ -661,6 +697,7 @@ ${post}`;
                 <div className="grid grid-cols-2 gap-4">
                     <ActionButton onClick={refinePost} loadingState="refine" icon={<RefreshCw />}>Refine</ActionButton>
                     <ActionButton onClick={generateHashtags} loadingState="hashtags" icon={<span className="text-lg">#</span>}>Hashtags</ActionButton>
+                    <ActionButton onClick={generateImagePrompt} loadingState="imagePrompt" icon={<Image />} className="purple-glow-hover">Image Prompt</ActionButton>
                     <ActionButton onClick={generateEmojis} loadingState="emojis" icon={<span className="text-lg">😊</span>}>Emojis</ActionButton>
                     <ActionButton onClick={critiquePost} loadingState="critique" icon={<span className="text-lg">🔍</span>} className="purple-glow-hover">Critique</ActionButton>
                 </div>
