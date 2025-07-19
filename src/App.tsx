@@ -571,56 +571,6 @@ ${post}`;
 
               <ScrollableToneSelector />
 
-              {/* Post Modification Section - Always Visible */}
-              <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300">
-                <div className="flex items-center gap-3 mb-4">
-                  <Edit3 className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-lg font-semibold text-gray-200">Customize Your Content</h3>
-                </div>
-                
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-gray-300">
-                    Tell me how you'd like to modify your post:
-                  </label>
-                  <textarea
-                    value={elaborateInstructions}
-                    onChange={(e) => setElaborateInstructions(e.target.value)}
-                    placeholder="e.g., 'Make this more professional and add statistics', 'Remove technical jargon and focus on benefits', 'Make it shorter and more engaging', 'Add a personal story', etc."
-                    rows={3}
-                    className="w-full p-4 rounded-xl bg-gray-900/60 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none backdrop-blur-sm purple-glow-hover"
-                  />
-                </div>
-                
-                <div className="bg-gray-800/60 p-4 rounded-xl border border-gray-700/40">
-                  <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                    <span className="text-lg">💡</span>
-                    Example Instructions:
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400">
-                    <div className="space-y-1">
-                      <p>• "Make this more professional"</p>
-                      <p>• "Add relevant statistics"</p>
-                      <p>• "Include a call-to-action"</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p>• "Make it more conversational"</p>
-                      <p>• "Focus on small businesses"</p>
-                      <p>• "Add a personal anecdote"</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <ActionButton 
-                  onClick={elaboratePost} 
-                  loadingState="elaborate" 
-                  icon={<Sparkles />} 
-                  variant="primary"
-                  className="w-full ripple purple-glow-hover"
-                  disabled={!post}
-                >
-                  {elaborateInstructions.trim() ? 'Apply Changes' : 'Elaborate Post'}
-                </ActionButton>
-              </div>
             </div>
             
             <ActionButton
@@ -715,6 +665,56 @@ ${post}`;
                     <ActionButton onClick={critiquePost} loadingState="critique" icon={<span className="text-lg">🔍</span>} className="purple-glow-hover">Critique</ActionButton>
                 </div>
 
+                {/* Post Modification Section - Appears Below Generated Post */}
+                <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Edit3 className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-lg font-semibold text-gray-200">Customize Your Content</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-300">
+                      Tell me how you'd like to modify your post:
+                    </label>
+                    <textarea
+                      value={elaborateInstructions}
+                      onChange={(e) => setElaborateInstructions(e.target.value)}
+                      placeholder="e.g., 'Make this more professional and add statistics', 'Remove technical jargon and focus on benefits', 'Make it shorter and more engaging', 'Add a personal story', etc."
+                      rows={3}
+                      className="w-full p-4 rounded-xl bg-gray-900/60 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-gray-200 placeholder-gray-500 resize-none backdrop-blur-sm purple-glow-hover"
+                    />
+                  </div>
+                  
+                  <div className="bg-gray-800/60 p-4 rounded-xl border border-gray-700/40">
+                    <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                      <span className="text-lg">💡</span>
+                      Example Instructions:
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400">
+                      <div className="space-y-1">
+                        <p>• "Make this more professional"</p>
+                        <p>• "Add relevant statistics"</p>
+                        <p>• "Include a call-to-action"</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p>• "Make it more conversational"</p>
+                        <p>• "Focus on small businesses"</p>
+                        <p>• "Add a personal anecdote"</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <ActionButton 
+                    onClick={elaboratePost} 
+                    loadingState="elaborate" 
+                    icon={<Sparkles />} 
+                    variant="primary"
+                    className="w-full ripple purple-glow-hover"
+                    disabled={!post}
+                  >
+                    {elaborateInstructions.trim() ? 'Apply Changes' : 'Elaborate Post'}
+                  </ActionButton>
+                </div>
                 <div className="space-y-6">
                     <OutputCard title="Suggested Hashtags" loadingState="hashtags" content={hashtags}>
                        <div className="relative group">
