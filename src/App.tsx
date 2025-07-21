@@ -104,7 +104,7 @@ export default function App() {
     setCritique('');
     setPostThread([]);
     setCopied(null);
-  }
+  };
 
   const typewriterEffect = async (text, setter) => {
     setIsTyping(true);
@@ -175,7 +175,7 @@ ${post}`;
     const prompt = `You are a LinkedIn growth expert. Analyze the post and provide 2-3 specific, actionable bullet points for improvement. Return only the critique. Critique this post:\n\n${post}`;
     const generatedCritique = await callGeminiAPI(prompt, 'critique');
     setCritique(generatedCritique);
-  }
+  };
 
   const elaboratePost = async () => {
     if (!post) return;
@@ -205,14 +205,14 @@ ${post}`;
     } else {
       setPost(elaboratedPost);
     }
-  }
+  };
 
   const createThread = async () => {
     if (!post) return;
     const prompt = `You are a content strategist. Break the following content into a 3-part LinkedIn thread. Each part should be a complete post starting with a number (e.g., "1/3"). Use "---" as a separator between parts. Return only the thread parts. Create a thread from this content:\n\n${post}`;
     const generatedThread = await callGeminiAPI(prompt, 'thread');
     setPostThread(generatedThread.split('---').map(p => p.trim()));
-  }
+  };
 
   const copyToClipboard = (text, type) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -298,8 +298,8 @@ ${post}`;
           </div>
         ) : children}
       </div>
-    )
-  }
+    );
+  };
 
   const ScrollableToneSelector = () => {
 
@@ -784,13 +784,7 @@ ${post}`;
                     Generate AI Image Prompt
                   </ActionButton>
                 </div>
-                {/* Generate Image Prompt Section - Moved below generated post */}
-                <div className="space-y-4 p-6 bg-gradient-to-br from-black/95 to-gray-900/95 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Image className="w-5 h-5 text-purple-400" />
-                    <h3 className="text-lg font-semibold text-gray-200">AI Image Prompt</h3>
-                  </div>
-                  
+
                 {/* Post Modification Section - Appears Below Generated Post */}
                 <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in enhanced-button-hover">
                   <div className="flex items-center gap-3 mb-4">
