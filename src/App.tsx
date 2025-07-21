@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Moon, Sun, Sparkles, Zap, RefreshCw, Clock, ChevronDown, Image, Edit3 } from 'lucide-react';
+import { Copy, Check, Sparkles, Zap, RefreshCw, Image, Edit3 } from 'lucide-react';
 
 // Main App Component
 export default function App() {
@@ -15,9 +15,6 @@ export default function App() {
   const [loading, setLoading] = useState(null);
   const [wordCount, setWordCount] = useState(0);
   const [copied, setCopied] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
-  const [recentPosts, setRecentPosts] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [generatedImagePrompt, setGeneratedImagePrompt] = useState('');
 
@@ -132,14 +129,6 @@ export default function App() {
       await typewriterEffect(generatedPost, setPost);
       
       // Add to recent posts
-      const newPost = {
-        id: Date.now(),
-        content: generatedPost.substring(0, 100) + '...',
-        topic: topic,
-        tone: tone,
-        timestamp: new Date().toLocaleTimeString()
-      };
-      setRecentPosts(prev => [newPost, ...prev.slice(0, 4)]);
     } else {
       setPost(generatedPost);
     }
@@ -259,16 +248,6 @@ ${post}`;
     }
   }, [post]);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('darkMode');
-    if (savedTheme !== null) {
-      setDarkMode(JSON.parse(savedTheme));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-  }, [darkMode]);
 
   const ActionButton = ({ onClick, disabled, loadingState, children, icon, className = '', variant = 'secondary' }) => {
     const baseClasses = "group relative flex items-center justify-center gap-3 w-full px-6 py-4 rounded-2xl font-semibold text-base transition-all duration-300 ease-out border disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden transform hover:scale-[1.02] active:scale-[0.98]";
@@ -323,38 +302,37 @@ ${post}`;
   }
 
   const ScrollableToneSelector = () => {
-    const selectedTone = tones.find(t => t.value === tone);
 
     return (
       <div className="space-y-4">
-        <div className="text-sm font-semibold text-gray-300 tracking-wider uppercase flex items-center gap-2">
+        <div className="text-sm font-semibold text-yellow-300 tracking-wider uppercase flex items-center gap-2">
           <span className="text-lg">🎭</span>
           Tone Selection
         </div>
-        <div className="bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 rounded-2xl p-4 backdrop-blur-xl">
-          <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <div className="premium-glass rounded-2xl p-6 border border-yellow-500/20">
+          <div className="grid grid-cols-2 gap-4 max-h-72 overflow-y-auto premium-scrollbar">
             {tones.map((toneOption) => (
               <button
                 key={toneOption.value}
                 onClick={() => setTone(toneOption.value)}
-                className={`p-3 rounded-xl text-left transition-all duration-300 group border-2 ${
+                className={`premium-tone-card p-4 rounded-xl text-left group ${
                   tone === toneOption.value
-                    ? `bg-gradient-to-r ${toneOption.color} border-white/30 shadow-lg`
-                    : 'bg-gray-800/60 border-gray-600/40 hover:border-gray-500/60 hover:bg-gray-700/60'
+                    ? 'selected'
+                    : ''
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg group-hover:scale-110 transition-transform duration-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-xl group-hover:scale-110 transition-transform duration-300">
                     {toneOption.emoji}
                   </span>
-                  <span className={`font-medium text-sm ${
-                    tone === toneOption.value ? 'text-white' : 'text-gray-200'
+                  <span className={`font-semibold text-sm ${
+                    tone === toneOption.value ? 'text-yellow-200' : 'text-gray-200'
                   }`}>
                     {toneOption.value}
                   </span>
                 </div>
-                <div className={`text-xs leading-tight ${
-                  tone === toneOption.value ? 'text-white/80' : 'text-gray-400'
+                <div className={`text-xs leading-relaxed ${
+                  tone === toneOption.value ? 'text-yellow-100/90' : 'text-gray-400'
                 }`}>
                   {toneOption.preview}
                 </div>
@@ -371,23 +349,28 @@ ${post}`;
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
         
-        /* Enhanced Animated Background */
-        .animated-gradient-bg {
-          background: linear-gradient(45deg, #FFD700, #FFA500, #FF8C00, #000000, #1a1a1a, #333333);
-          background-size: 400% 400%;
-          animation: gradientShift 6s ease-in-out infinite;
+        /* Premium Gold-Black Gradient Background */
+        .premium-gradient-bg {
+          background: linear-gradient(135deg, 
+            #FFD700 0%,     /* Pure Gold */
+            #FFC107 15%,    /* Amber Gold */
+            #FF8F00 35%,    /* Deep Gold */
+            #B8860B 55%,    /* Dark Goldenrod */
+            #2C2C2C 75%,    /* Charcoal */
+            #1A1A1A 90%,    /* Dark Gray */
+            #000000 100%    /* Pure Black */
+          );
+          background-size: 200% 200%;
+          animation: subtleGradientShift 12s ease-in-out infinite;
         }
         
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          25% { background-position: 100% 50%; }
-          50% { background-position: 100% 100%; }
-          75% { background-position: 0% 100%; }
-          100% { background-position: 0% 50%; }
+        @keyframes subtleGradientShift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
         
-        /* Enhanced Floating Particles */
-        .enhanced-particles::before {
+        /* Minimal Elegant Particles */
+        .elegant-particles::before {
           content: '';
           position: fixed;
           top: 0;
@@ -395,24 +378,22 @@ ${post}`;
           width: 100%;
           height: 100%;
           background-image: 
-            radial-gradient(3px 3px at 20px 30px, rgba(255, 215, 0, 0.4), transparent),
-            radial-gradient(3px 3px at 40px 70px, rgba(255, 165, 0, 0.5), transparent),
-            radial-gradient(2px 2px at 90px 40px, rgba(255, 215, 0, 0.4), transparent),
-            radial-gradient(2px 2px at 130px 80px, rgba(255, 165, 0, 0.3), transparent),
-            radial-gradient(3px 3px at 160px 30px, rgba(255, 140, 0, 0.4), transparent),
-            radial-gradient(1px 1px at 200px 60px, rgba(255, 215, 0, 0.3), transparent);
+            radial-gradient(2px 2px at 25px 35px, rgba(255, 215, 0, 0.15), transparent),
+            radial-gradient(1px 1px at 45px 75px, rgba(255, 193, 7, 0.12), transparent),
+            radial-gradient(1px 1px at 95px 45px, rgba(255, 215, 0, 0.1), transparent),
+            radial-gradient(2px 2px at 135px 85px, rgba(184, 134, 11, 0.08), transparent);
           background-repeat: repeat;
-          background-size: 250px 120px;
-          animation: enhancedParticleFloat 25s infinite linear;
+          background-size: 180px 100px;
+          animation: elegantParticleFloat 30s infinite linear;
           pointer-events: none;
           z-index: 1;
         }
         
-        @keyframes enhancedParticleFloat {
+        @keyframes elegantParticleFloat {
           0% { transform: translateY(0px) translateX(0px); }
-          25% { transform: translateY(-30px) translateX(15px); }
-          50% { transform: translateY(-10px) translateX(-10px); }
-          75% { transform: translateY(-25px) translateX(20px); }
+          25% { transform: translateY(-15px) translateX(8px); }
+          50% { transform: translateY(-5px) translateX(-5px); }
+          75% { transform: translateY(-12px) translateX(10px); }
           100% { transform: translateY(0px) translateX(0px); }
         }
         
@@ -477,13 +458,76 @@ ${post}`;
           }
         }
         
-        .glass-morphism {
+        /* Premium Glass Morphism */
+        .premium-glass {
           background: linear-gradient(135deg, 
-            rgba(0, 0, 0, 0.9) 0%, 
-            rgba(17, 17, 17, 0.8) 50%, 
-            rgba(0, 0, 0, 0.9) 100%);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+            rgba(0, 0, 0, 0.85) 0%, 
+            rgba(20, 20, 20, 0.75) 30%,
+            rgba(40, 40, 40, 0.65) 70%,
+            rgba(0, 0, 0, 0.85) 100%);
+          backdrop-filter: blur(24px) saturate(1.2);
+          border: 1px solid rgba(255, 215, 0, 0.15);
+          box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 215, 0, 0.1);
+        }
+        
+        /* Premium Tone Selection */
+        .premium-tone-card {
+          background: linear-gradient(135deg,
+            rgba(0, 0, 0, 0.8) 0%,
+            rgba(30, 30, 30, 0.7) 50%,
+            rgba(0, 0, 0, 0.8) 100%);
+          backdrop-filter: blur(16px);
+          border: 1.5px solid rgba(255, 215, 0, 0.2);
+          box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 215, 0, 0.1);
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .premium-tone-card:hover {
+          transform: translateY(-2px) scale(1.02);
+          border-color: rgba(255, 215, 0, 0.4);
+          box-shadow: 
+            0 8px 24px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(255, 215, 0, 0.15),
+            inset 0 1px 0 rgba(255, 215, 0, 0.2);
+        }
+        
+        .premium-tone-card.selected {
+          background: linear-gradient(135deg,
+            rgba(255, 215, 0, 0.15) 0%,
+            rgba(255, 193, 7, 0.1) 50%,
+            rgba(255, 215, 0, 0.15) 100%);
+          border-color: rgba(255, 215, 0, 0.6);
+          box-shadow: 
+            0 8px 24px rgba(0, 0, 0, 0.4),
+            0 0 30px rgba(255, 215, 0, 0.25),
+            inset 0 1px 0 rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Premium Scrollbar */
+        .premium-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .premium-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 3px;
+        }
+        
+        .premium-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, 
+            rgba(255, 215, 0, 0.6) 0%, 
+            rgba(255, 193, 7, 0.4) 100%);
+          border-radius: 3px;
+        }
+        
+        .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, 
+            rgba(255, 215, 0, 0.8) 0%, 
+            rgba(255, 193, 7, 0.6) 100%);
         }
         
         .animate-fade-in {
@@ -575,63 +619,24 @@ ${post}`;
         }
       `}</style>
       
-      <div className={`min-h-screen w-full transition-all duration-500 ${darkMode ? 'animated-gradient-bg text-gray-100' : 'bg-gray-50 text-gray-900'} p-6 sm:p-8 lg:p-10 flex items-center justify-center overflow-hidden relative enhanced-particles`}>
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="fixed top-6 right-6 z-50 p-4 rounded-2xl bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl border border-gray-600/40 hover:border-gray-500/60 transition-all duration-300 hover:scale-110 enhanced-button-hover"
-        >
-          {darkMode ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-gray-600" />}
-        </button>
-
-        {/* History Toggle */}
-        <button
-          onClick={() => setShowHistory(!showHistory)}
-          className="fixed top-6 left-6 z-50 p-4 rounded-2xl bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl border border-gray-600/40 hover:border-gray-500/60 transition-all duration-300 hover:scale-110 enhanced-button-hover"
-        >
-          <Clock className="w-6 h-6 text-orange-400" />
-        </button>
-
-        {/* History Sidebar */}
-        {showHistory && (
-          <div className="fixed left-0 top-0 h-full w-80 bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-xl border-r border-gray-600/40 z-40 p-6 overflow-y-auto">
-            <h3 className="text-xl font-bold mb-6 text-orange-400 flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Recent Posts
-            </h3>
-            <div className="space-y-4">
-              {recentPosts.map((recentPost) => (
-                <div key={recentPost.id} className="p-4 bg-gray-800/60 rounded-xl border border-gray-700/40 hover:border-gray-600/60 transition-all duration-200 cursor-pointer">
-                  <div className="text-sm text-gray-400 mb-2">{recentPost.timestamp}</div>
-                  <div className="text-gray-300 text-sm mb-2">{recentPost.content}</div>
-                  <div className="flex gap-2">
-                    <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-lg">{recentPost.tone}</span>
-                  </div>
-                </div>
-              ))}
-              {recentPosts.length === 0 && (
-                <div className="text-gray-500 text-center py-8">No recent posts yet</div>
-              )}
-            </div>
-          </div>
-        )}
+      <div className="min-h-screen w-full premium-gradient-bg text-gray-100 p-6 sm:p-8 lg:p-10 flex items-center justify-center overflow-hidden relative elegant-particles">
           
         <main className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 z-10 relative">
           {/* Left Panel: Controls */}
-          <div className="space-y-8 p-10 sm:p-12 glass-morphism rounded-3xl relative group animate-slide-in-left">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-yellow-500/5 to-orange-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="space-y-8 p-10 sm:p-12 premium-glass rounded-3xl relative group animate-slide-in-left">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/3 via-amber-500/3 to-yellow-500/3 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             
             <header className="relative z-10">
               <div className="flex items-center gap-5 mb-6">
-                <div className="p-4 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-2xl floating-icon animate-bounce-in">
-                  <Zap className="w-8 h-8 text-orange-400" />
+                <div className="p-4 bg-gradient-to-br from-yellow-500/25 to-amber-600/25 rounded-2xl floating-icon animate-bounce-in border border-yellow-500/20">
+                  <Zap className="w-8 h-8 text-yellow-400" />
                 </div>
-                <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-300 bg-clip-text text-transparent tracking-tight cursor-default">
+                <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 bg-clip-text text-transparent tracking-tight cursor-default">
                   PostPal AI
                 </h1>
               </div>
               <p className="text-gray-400 text-lg leading-relaxed font-medium animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                Craft Compelling LinkedIn Content, <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent font-semibold">Instantly</span>.
+                Craft Compelling LinkedIn Content, <span className="bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent font-semibold">Instantly</span>.
               </p>
             </header>
 
@@ -647,7 +652,7 @@ ${post}`;
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="e.g., Announcing a product launch, discussing industry trends, sharing career insights"
-                  className="w-full p-5 rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-gray-600/40 focus:border-orange-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-500 hover:border-gray-500/60 enhanced-input-focus"
+                  className="w-full p-5 rounded-2xl bg-gradient-to-br from-black/90 to-gray-900/80 border border-yellow-500/30 focus:border-yellow-500/60 focus:outline-none transition-all duration-400 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-500 hover:border-yellow-500/40 shadow-lg"
                 />
               </div>
 
@@ -707,11 +712,11 @@ ${post}`;
           </div>
 
           {/* Right Panel: Output */}
-          <div className="space-y-8 p-10 sm:p-12 glass-morphism rounded-3xl relative group animate-slide-in-right">
-            <div className="absolute inset-0 bg-gradient-to-l from-yellow-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="space-y-8 p-10 sm:p-12 premium-glass rounded-3xl relative group animate-slide-in-right">
+            <div className="absolute inset-0 bg-gradient-to-l from-amber-500/3 via-yellow-500/3 to-amber-500/3 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent tracking-tight relative z-10 flex items-center gap-3 animate-bounce-in">
-              <Sparkles className="w-8 h-8 text-orange-400" />
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent tracking-tight relative z-10 flex items-center gap-3 animate-bounce-in">
+              <Sparkles className="w-8 h-8 text-yellow-400" />
               Generated Content
             </h2>
             
