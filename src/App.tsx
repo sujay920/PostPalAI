@@ -656,44 +656,6 @@ ${post}`;
                 />
               </div>
 
-              <div className="space-y-4">
-                <label htmlFor="tone" className="block text-sm font-semibold text-gray-300 tracking-wider uppercase flex items-center gap-2">
-                  <Image className="w-4 h-4" />
-                  Image Prompt
-                </label>
-                <div className="space-y-3">
-                  <textarea
-                    id="imagePrompt"
-                    value={generatedImagePrompt || imagePrompt}
-                    onChange={(e) => {
-                      if (generatedImagePrompt) {
-                        setGeneratedImagePrompt(e.target.value);
-                      } else {
-                        setImagePrompt(e.target.value);
-                      }
-                    }}
-                    placeholder="AI will generate an image prompt based on your post content, or you can write your own..."
-                    rows={3}
-                    className="w-full p-5 rounded-2xl bg-gradient-to-br from-black/90 to-gray-900/90 border border-gray-600/40 focus:border-purple-500/50 focus:outline-none transition-all duration-300 text-lg leading-relaxed backdrop-blur-xl placeholder-gray-400 hover:border-purple-400/60 purple-glow-hover resize-none"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(17, 17, 17, 0.9) 50%, rgba(0, 0, 0, 0.95) 100%)',
-                      backdropFilter: 'blur(20px)',
-                      boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                    }}
-                  />
-                  {post && (
-                    <ActionButton
-                      onClick={generateImagePrompt}
-                      disabled={loading}
-                      loadingState="imagePrompt"
-                      icon={<Sparkles />}
-                      className="purple-glow-hover"
-                    >
-                      Generate Image Prompt
-                    </ActionButton>
-                  )}
-                </div>
-              </div>
 
               <ScrollableToneSelector />
 
@@ -784,7 +746,7 @@ ${post}`;
                   </div>
                 </div>
 
-                {/* Generate Image Prompt Section - Moved below generated post */}
+                {/* Generate Image Prompt Section - Below generated post */}
                 <div className="space-y-4 p-6 bg-gradient-to-br from-black/95 to-gray-900/95 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in">
                   <div className="flex items-center gap-3 mb-4">
                     <Image className="w-5 h-5 text-purple-400" />
@@ -822,14 +784,13 @@ ${post}`;
                     Generate AI Image Prompt
                   </ActionButton>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <ActionButton onClick={refinePost} loadingState="refine" icon={<RefreshCw />} className="enhanced-button-hover">Refine</ActionButton>
-                    <ActionButton onClick={generateHashtags} loadingState="hashtags" icon={<span className="text-lg">#</span>} className="enhanced-button-hover">Hashtags</ActionButton>
-                    <ActionButton onClick={generateEmojis} loadingState="emojis" icon={<span className="text-lg">😊</span>} className="enhanced-button-hover">Emojis</ActionButton>
-                    <ActionButton onClick={critiquePost} loadingState="critique" icon={<span className="text-lg">🔍</span>} className="purple-glow-hover enhanced-button-hover">Critique</ActionButton>
-                </div>
-
+                {/* Generate Image Prompt Section - Moved below generated post */}
+                <div className="space-y-4 p-6 bg-gradient-to-br from-black/95 to-gray-900/95 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Image className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-lg font-semibold text-gray-200">AI Image Prompt</h3>
+                  </div>
+                  
                 {/* Post Modification Section - Appears Below Generated Post */}
                 <div className="space-y-4 p-6 bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-600/40 rounded-2xl backdrop-blur-xl purple-glow-hover transition-all duration-300 animate-fade-in enhanced-button-hover">
                   <div className="flex items-center gap-3 mb-4">
