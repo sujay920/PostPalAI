@@ -513,14 +513,12 @@ ${post}`;
         
         .dark-tone-card.selected {
           background: linear-gradient(135deg,
-            rgba(255, 215, 0, 0.12) 0%,
-            rgba(255, 193, 7, 0.08) 50%,
-            rgba(255, 215, 0, 0.12) 100%);
-          border-color: rgba(255, 215, 0, 0.4);
-          box-shadow: 
-            0 8px 24px rgba(0, 0, 0, 0.4),
-            0 0 25px rgba(255, 215, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            rgba(255, 215, 0, 0.15) 0%,
+            rgba(255, 193, 7, 0.1) 50%,
+            rgba(255, 215, 0, 0.15) 100%);
+          border-color: rgba(255, 215, 0, 0.6);
+          animation: goldPulse 2s ease-in-out infinite;
+          transform: translateY(-2px) scale(1.02);
         }
         
         /* Light Mode Tone Cards */
@@ -552,14 +550,48 @@ ${post}`;
         
         .light-tone-card.selected {
           background: linear-gradient(135deg,
-            rgba(180, 83, 9, 0.12) 0%,
-            rgba(146, 64, 14, 0.08) 50%,
-            rgba(180, 83, 9, 0.12) 100%);
-          border-color: rgba(180, 83, 9, 0.4);
-          box-shadow: 
-            0 8px 24px rgba(0, 0, 0, 0.15),
-            0 0 25px rgba(180, 83, 9, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            rgba(180, 83, 9, 0.15) 0%,
+            rgba(146, 64, 14, 0.1) 50%,
+            rgba(180, 83, 9, 0.15) 100%);
+          border-color: rgba(180, 83, 9, 0.6);
+          animation: amberPulse 2s ease-in-out infinite;
+          transform: translateY(-2px) scale(1.02);
+        }
+        
+        /* Pulsating Gold Glow Animation for Dark Mode */
+        @keyframes goldPulse {
+          0%, 100% {
+            box-shadow: 
+              0 8px 24px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(255, 215, 0, 0.3),
+              0 0 40px rgba(255, 215, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          }
+          50% {
+            box-shadow: 
+              0 8px 32px rgba(0, 0, 0, 0.5),
+              0 0 30px rgba(255, 215, 0, 0.5),
+              0 0 60px rgba(255, 215, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          }
+        }
+        
+        /* Pulsating Amber Glow Animation for Light Mode */
+        @keyframes amberPulse {
+          0%, 100% {
+            box-shadow: 
+              0 8px 24px rgba(0, 0, 0, 0.15),
+              0 0 20px rgba(180, 83, 9, 0.3),
+              0 0 40px rgba(180, 83, 9, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+          }
+          50% {
+            box-shadow: 
+              0 8px 32px rgba(0, 0, 0, 0.2),
+              0 0 30px rgba(180, 83, 9, 0.5),
+              0 0 60px rgba(180, 83, 9, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.95);
+          }
         }
         
         /* Theme Toggle Button */
@@ -666,7 +698,7 @@ ${post}`;
           <div className={`${isDarkMode ? 'dark-glass' : 'light-glass'} rounded-3xl p-12 animate-slide-in-center`}>
             
             {/* Header */}
-            <header className="text-center mb-12">
+            <header className="text-center mb-8">
               <div className="flex items-center justify-center gap-4 mb-6">
                 <div className={`p-4 ${isDarkMode ? 'bg-gradient-to-br from-yellow-500/20 to-amber-600/20' : 'bg-gradient-to-br from-amber-600/20 to-yellow-700/20'} rounded-2xl backdrop-blur-sm border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
                   <Zap className={`w-10 h-10 ${isDarkMode ? 'text-yellow-400' : 'text-amber-700'}`} />
@@ -723,17 +755,6 @@ ${post}`;
                           }`}
                         >
                           <div className="flex items-center gap-3 mb-3">
-                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                              selectedTones.includes(toneOption.value)
-                                ? (isDarkMode ? 'bg-yellow-400 border-yellow-400' : 'bg-amber-600 border-amber-600')
-                                : (isDarkMode ? 'border-white/30' : 'border-stone-400/50')
-                            } transition-all duration-300`}>
-                              {selectedTones.includes(toneOption.value) && (
-                                <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </div>
                             <span className="text-2xl group-hover:scale-110 transition-transform duration-300">
                               {toneOption.emoji}
                             </span>
@@ -785,7 +806,7 @@ ${post}`;
             {/* Output Section */}
             <div className={`section-transition ${currentSection === 'output' ? 'section-visible' : 'section-hidden'}`}>
               {post && (
-                <div className="space-y-6 animate-fade-in-up">
+                <div className="space-y-6 animate-fade-in-up mt-4">
                   
                   {/* Generated Post */}
                   <div className="relative group">
