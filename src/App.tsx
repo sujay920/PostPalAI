@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Sparkles, Zap, RefreshCw, Image, Edit3, BarChart3, Sun, Moon } from 'lucide-react';
+import { Zap, Sparkles, Sun, Moon, FileText, Edit3, ArrowLeft, Wand2, Hash, Brain } from 'lucide-react';
 
 // Main App Component
 export default function App() {
@@ -154,10 +154,6 @@ export default function App() {
     
     if (generatedPost && !generatedPost.startsWith('Error:')) {
       await typewriterEffect(generatedPost, setPost);
-      
-      // Auto-generate hashtags and critique after content generation
-      generateHashtags();
-      critiquePost();
     } else {
       setPost(generatedPost);
     }
