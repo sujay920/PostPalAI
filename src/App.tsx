@@ -4,7 +4,7 @@ import { Copy, Check, Sparkles, Zap, RefreshCw, Image, Edit3, BarChart3, Sun, Mo
 // Main App Component
 export default function App() {
   const [topic, setTopic] = useState('');
-  const [tone, setTone] = useState('Professional');
+  const [selectedTones, setSelectedTones] = useState(['Professional']);
   const [post, setPost] = useState('');
   const [elaborateInstructions, setElaborateInstructions] = useState('');
   const [hashtags, setHashtags] = useState('');
@@ -138,7 +138,8 @@ export default function App() {
     setPost('');
     clearOutputs();
     setCurrentSection('output');
-    const prompt = `You are an expert LinkedIn content creator. Your response should be only the post content itself, with no introductory text like "Here is the post". You write in a ${tone} tone. The post should be well-structured, easy to read, and encourage interaction. Do not include hashtags. The topic is: "${topic}"`;
+    const tonesText = selectedTones.length === 1 ? `${selectedTones[0]} tone` : `combination of ${selectedTones.join(', ')} tones`;
+    const prompt = `You are an expert LinkedIn content creator. Your response should be only the post content itself, with no introductory text like "Here is the post". You write in a ${tonesText}. The post should be well-structured, easy to read, and encourage interaction. Do not include hashtags. The topic is: "${topic}"`;
     const generatedPost = await callGeminiAPI(prompt, 'post');
     
     if (generatedPost && !generatedPost.startsWith('Error:')) {
@@ -165,7 +166,8 @@ export default function App() {
   const refinePost = async () => {
     if (!post) return;
     clearOutputs();
-    const prompt = `You are an expert editor. Refine the following post to make it more impactful, maintaining a ${tone} tone. Return only the refined post, with no introductory text. Refine this post:\n\n${post}`;
+    const tonesText = selectedTones.length === 1 ? `${selectedTones[0]} tone` : `combination of ${selectedTones.join(', ')} tones`;
+    const prompt = `You are an expert editor. Refine the following post to make it more impactful, maintaining a ${tonesText}. Return only the refined post, with no introductory text. Refine this post:\n\n${post}`;
     const refinedPost = await callGeminiAPI(prompt, 'refine');
     if (refinedPost && !refinedPost.startsWith('Error:')) {
       await typewriterEffect(refinedPost, setPost);
@@ -196,12 +198,13 @@ ${post}`;
     clearOutputs();
     
     let prompt;
+    const tonesText = selectedTones.length === 1 ? `${selectedTones[0]} tone` : `combination of ${selectedTones.join(', ')} tones`;
     if (elaborateInstructions.trim()) {
       prompt = `You are an expert content strategist and editor. Take the following LinkedIn post and modify it based on these specific instructions: "${elaborateInstructions}"
 
 Guidelines for modification:
 - Follow the user's instructions precisely
-- Maintain a ${tone} tone unless instructed otherwise
+- Maintain a ${tonesText} unless instructed otherwise
 - Ensure factual accuracy and relevance
 - Keep the content engaging and LinkedIn-appropriate
 - Preserve the core message while incorporating requested changes
@@ -210,7 +213,7 @@ Guidelines for modification:
 Original post:
 ${post}`;
     } else {
-      prompt = `You are an expert content strategist. Take the following post and elaborate on it by adding more details, examples, insights, and depth while maintaining the same ${tone} tone. Make it more comprehensive and valuable to readers. Return only the elaborated post content:\n\n${post}`;
+      prompt = `You are an expert content strategist. Take the following post and elaborate on it by adding more details, examples, insights, and depth while maintaining the same ${tonesText}. Make it more comprehensive and valuable to readers. Return only the elaborated post content:\n\n${post}`;
     }
     
     const elaboratedPost = await callGeminiAPI(prompt, 'elaborate');
@@ -244,6 +247,18 @@ ${post}`;
   const regeneratePost = async () => {
     if (!topic) return;
     await generatePost();
+  };
+
+  const toggleTone = (toneValue) => {
+    setSelectedTones(prev => {
+      if (prev.includes(toneValue)) {
+        // Don't allow removing the last tone
+        if (prev.length === 1) return prev;
+        return prev.filter(t => t !== toneValue);
+      } else {
+        return [...prev, toneValue];
+      }
+    });
   };
 
   useEffect(() => {
@@ -354,9 +369,10 @@ ${post}`;
         .dark-premium-bg {
           background: linear-gradient(135deg, 
             #000000 0%,     /* Pure Black */
-            #1a1a1a 25%,    /* Charcoal */
-            #2d1b69 50%,    /* Deep Purple */
-            #1a1a1a 75%,    /* Charcoal */
+            #0f172a 20%,    /* Dark Blue */
+            #1e293b 40%,    /* Slate Blue */
+            #0f172a 60%,    /* Dark Blue */
+            #000814 80%,    /* Navy Black */
             #000000 100%    /* Pure Black */
           );
           background-size: 400% 400%;
@@ -701,17 +717,28 @@ ${post}`;
                       {tones.map((toneOption) => (
                         <button
                           key={toneOption.value}
-                          onClick={() => setTone(toneOption.value)}
+                          onClick={() => toggleTone(toneOption.value)}
                           className={`${isDarkMode ? 'dark-tone-card' : 'light-tone-card'} p-6 rounded-xl text-left group ${
-                            tone === toneOption.value ? 'selected' : ''
+                            selectedTones.includes(toneOption.value) ? 'selected' : ''
                           }`}
                         >
                           <div className="flex items-center gap-3 mb-3">
+                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                              selectedTones.includes(toneOption.value)
+                                ? (isDarkMode ? 'bg-yellow-400 border-yellow-400' : 'bg-amber-600 border-amber-600')
+                                : (isDarkMode ? 'border-white/30' : 'border-stone-400/50')
+                            } transition-all duration-300`}>
+                              {selectedTones.includes(toneOption.value) && (
+                                <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
                             <span className="text-2xl group-hover:scale-110 transition-transform duration-300">
                               {toneOption.emoji}
                             </span>
                             <span className={`font-semibold text-base ${
-                              tone === toneOption.value 
+                              selectedTones.includes(toneOption.value)
                                 ? (isDarkMode ? 'text-yellow-200' : 'text-amber-800') 
                                 : (isDarkMode ? 'text-slate-200' : 'text-stone-700')
                             }`}>
@@ -719,7 +746,7 @@ ${post}`;
                             </span>
                           </div>
                           <div className={`text-sm leading-relaxed ${
-                            tone === toneOption.value 
+                            selectedTones.includes(toneOption.value)
                               ? (isDarkMode ? 'text-yellow-100/90' : 'text-amber-700/90') 
                               : (isDarkMode ? 'text-slate-400' : 'text-stone-500')
                           }`}>
@@ -729,6 +756,16 @@ ${post}`;
                       ))}
                     </div>
                   </div>
+                  
+                  {/* Selected Tones Display */}
+                  {selectedTones.length > 0 && (
+                    <div className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-stone-600'} flex items-center gap-2 flex-wrap`}>
+                      <span>Selected:</span>
+                      {selectedTones.map(tone => (
+                        <span key={tone} className={`px-3 py-1 rounded-full ${isDarkMode ? 'bg-yellow-400/20 text-yellow-300' : 'bg-amber-600/20 text-amber-700'} text-xs font-medium`}>{tone}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Generate Button */}
@@ -746,9 +783,9 @@ ${post}`;
             </div>
 
             {/* Output Section */}
-            <div className={`section-transition ${currentSection === 'output' && post ? 'section-visible' : 'section-hidden'}`}>
+            <div className={`section-transition ${currentSection === 'output' ? 'section-visible' : 'section-hidden'}`}>
               {post && (
-                <div className="space-y-8 animate-fade-in-up">
+                <div className="space-y-6 animate-fade-in-up">
                   
                   {/* Generated Post */}
                   <div className="relative group">
@@ -796,7 +833,7 @@ ${post}`;
                   </div>
 
                   {/* AI Image Prompt Section */}
-                  <div className={`space-y-4 p-8 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-stone-50/80 border-stone-200/50'} border rounded-2xl backdrop-blur-xl transition-all duration-300 ${isDarkMode ? 'hover:bg-white/8 hover:border-amber-400/30' : 'hover:bg-stone-100/80 hover:border-amber-500/30'}`}>
+                  <div className={`space-y-4 p-6 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-stone-50/80 border-stone-200/50'} border rounded-2xl backdrop-blur-xl transition-all duration-300 ${isDarkMode ? 'hover:bg-white/8 hover:border-amber-400/30' : 'hover:bg-stone-100/80 hover:border-amber-500/30'}`}>
                     <div className="flex items-center gap-3 mb-4">
                       <Image className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-yellow-700'}`} />
                       <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-slate-200' : 'text-stone-700'}`}>AI Visual Prompt</h3>
@@ -806,7 +843,7 @@ ${post}`;
                       value={generatedImagePrompt}
                       onChange={(e) => setGeneratedImagePrompt(e.target.value)}
                       placeholder="AI will generate a professional image prompt based on your content..."
-                      rows={3}
+                      rows={2}
                       className={`w-full p-6 rounded-2xl ${isDarkMode 
                         ? 'bg-black/30 border border-white/10 focus:border-amber-400/50 text-white placeholder-slate-400 hover:border-amber-400/30' 
                         : 'bg-white/60 border border-stone-300/50 focus:border-yellow-600/50 text-stone-800 placeholder-stone-500 hover:border-yellow-600/30'
@@ -825,7 +862,7 @@ ${post}`;
                   </div>
 
                   {/* Action Buttons Grid */}
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-4">
                     <PremiumButton onClick={refinePost} loadingState="refine" icon={<Edit3 />}>
                       Refine Content
                     </PremiumButton>
@@ -841,7 +878,7 @@ ${post}`;
                   </div>
 
                   {/* Customize Content Section */}
-                  <div className={`space-y-6 p-8 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-stone-50/80 border-stone-200/50'} border rounded-2xl backdrop-blur-xl transition-all duration-300 ${isDarkMode ? 'hover:bg-white/8 hover:border-amber-400/30' : 'hover:bg-stone-100/80 hover:border-amber-500/30'}`}>
+                  <div className={`space-y-4 p-6 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-stone-50/80 border-stone-200/50'} border rounded-2xl backdrop-blur-xl transition-all duration-300 ${isDarkMode ? 'hover:bg-white/8 hover:border-amber-400/30' : 'hover:bg-stone-100/80 hover:border-amber-500/30'}`}>
                     <div className="flex items-center gap-3 mb-4">
                       <Edit3 className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-yellow-700'}`} />
                       <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-slate-200' : 'text-stone-700'}`}>Content Customization</h3>
@@ -851,7 +888,7 @@ ${post}`;
                       value={elaborateInstructions}
                       onChange={(e) => setElaborateInstructions(e.target.value)}
                       placeholder="Describe how you'd like to modify your content (e.g., 'Make it more professional', 'Add statistics', 'Focus on benefits')..."
-                      rows={4}
+                      rows={3}
                       className={`w-full p-6 rounded-2xl ${isDarkMode 
                         ? 'bg-black/30 border border-white/10 focus:border-amber-400/50 text-slate-200 placeholder-slate-400' 
                         : 'bg-white/60 border border-stone-300/50 focus:border-yellow-600/50 text-stone-800 placeholder-stone-500'
@@ -870,7 +907,7 @@ ${post}`;
                   </div>
 
                   {/* Output Cards */}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <OutputCard title="Suggested Hashtags" loadingState="hashtags" content={hashtags}>
                       <div className="relative group">
                         <p className={`${isDarkMode ? 'text-yellow-400 bg-black/30' : 'text-amber-700 bg-white/60'} font-mono text-base leading-relaxed pr-16 p-6 rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>{hashtags}</p>
@@ -896,7 +933,7 @@ ${post}`;
                   </div>
 
                   {/* Back to Input Button */}
-                  <div className="text-center pt-8">
+                  <div className="text-center pt-4">
                     <PremiumButton
                       onClick={() => setCurrentSection('input')}
                       icon={<RefreshCw />}
