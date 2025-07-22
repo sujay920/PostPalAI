@@ -115,6 +115,10 @@ export default function App() {
         }
 
         if (!response.ok) {
+           if (response.status === 403) {
+                console.error("API Error Response (403):", await response.text());
+                throw new Error(`API request failed with status 403 (Forbidden). This often means the API key is missing, invalid, or doesn't have the required permissions for the Gemini API. Please check your API key setup.`);
+            }
           const errorBody = await response.text();
           console.error("API Error Response:", errorBody);
           throw new Error(`API request failed with status ${response.status}`);
