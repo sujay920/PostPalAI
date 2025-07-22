@@ -18,6 +18,11 @@ export default function App() {
   const [generatedImagePrompt, setGeneratedImagePrompt] = useState('');
   const [currentSection, setCurrentSection] = useState('input');
   const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark mode
+  const [addedHashtags, setAddedHashtags] = useState([]);
+  const [addedEmojis, setAddedEmojis] = useState([]);
+  const [hashtagList, setHashtagList] = useState([]);
+  const [emojiList, setEmojiList] = useState([]);
+  const [critiquePoints, setCritiquePoints] = useState([]);
 
   // Theme persistence
   useEffect(() => {
@@ -119,6 +124,11 @@ export default function App() {
     setCritique('');
     setPostThread([]);
     setCopied(null);
+    setAddedHashtags([]);
+    setAddedEmojis([]);
+    setHashtagList([]);
+    setEmojiList([]);
+    setCritiquePoints([]);
   };
 
   const typewriterEffect = async (text, setter) => {
@@ -151,16 +161,59 @@ export default function App() {
 
   const generateHashtags = async () => {
     if (!post) return;
-    const prompt = `You are a hashtag generator. Return only 5-7 relevant hashtags separated by spaces, like #tagone #tagtwo. Generate hashtags for this post:\n\n${post}`;
+    const prompt = `You are a social media hashtag expert. Generate 10-15 relevant, trending hashtags for LinkedIn content. Return ONLY a JSON array of hashtag objects with this exact format:
+[
+  {"hashtag": "#leadership", "category": "professional"},
+  {"hashtag": "#innovation", "category": "trending"},
+  {"hashtag": "#growth", "category": "engagement"}
+]
+
+Categories should be: professional, trending, engagement, industry, or niche.
+Post content: ${post}`;
     const generatedHashtags = await callGeminiAPI(prompt, 'hashtags');
-    setHashtags(generatedHashtags);
+    
+    try {
+      const parsed = JSON.parse(generatedHashtags);
+      setHashtagList(parsed);
+      setHashtags('Generated ' + parsed.length + ' hashtags');
+    } catch (error) {
+      // Fallback to simple format
+      const simpleHashtags = generatedHashtags.split(' ').filter(tag => tag.startsWith('#')).map(tag => ({
+        hashtag: tag,
+        category: 'general'
+      }));
+      setHashtagList(simpleHashtags);
+      setHashtags(generatedHashtags);
+    }
   };
 
   const generateEmojis = async () => {
     if (!post) return;
-    const prompt = `You are an emoji suggestion assistant. Return only a short string of 3-5 relevant emojis. Suggest emojis for this post:\n\n${post}`;
+    const prompt = `You are an emoji expert for social media. Generate 8-12 contextually appropriate emojis for LinkedIn content. Return ONLY a JSON array of emoji objects with this exact format:
+[
+  {"emoji": "💼", "description": "Professional", "context": "business"},
+  {"emoji": "🚀", "description": "Growth", "context": "motivation"},
+  {"emoji": "💡", "description": "Ideas", "context": "innovation"}
+]
+
+Context should be: business, motivation, celebration, innovation, or engagement.
+Post content: ${post}`;
     const generatedEmojis = await callGeminiAPI(prompt, 'emojis');
-    setEmojis(generatedEmojis);
+    
+    try {
+      const parsed = JSON.parse(generatedEmojis);
+      setEmojiList(parsed);
+      setEmojis('Generated ' + parsed.length + ' emojis');
+    } catch (error) {
+      // Fallback to simple format
+      const simpleEmojis = generatedEmojis.split('').filter(char => /\p{Emoji}/u.test(char)).map(emoji => ({
+        emoji: emoji,
+        description: 'Relevant',
+        context: 'general'
+      }));
+      setEmojiList(simpleEmojis);
+      setEmojis(generatedEmojis);
+    }
   };
 
   const refinePost = async () => {
@@ -188,9 +241,26 @@ ${post}`;
 
   const critiquePost = async () => {
     if (!post) return;
-    const prompt = `You are a LinkedIn growth expert. Analyze the post and provide 2-3 specific, actionable bullet points for improvement. Return only the critique. Critique this post:\n\n${post}`;
+    const prompt = `You are a LinkedIn growth expert. Analyze this post for engagement potential, clarity, and tone. Return ONLY a JSON array of critique objects with this exact format:
+[
+  {"issue": "Hook could be stronger", "suggestion": "Start with a question or surprising statistic", "priority": "high"},
+  {"issue": "Missing call-to-action", "suggestion": "Add 'What's your experience?' at the end", "priority": "medium"},
+  {"issue": "Too formal tone", "suggestion": "Use more conversational language", "priority": "low"}
+]
+
+Priority should be: high, medium, or low.
+Post content: ${post}`;
     const generatedCritique = await callGeminiAPI(prompt, 'critique');
-    setCritique(generatedCritique);
+    
+    try {
+      const parsed = JSON.parse(generatedCritique);
+      setCritiquePoints(parsed);
+      setCritique('Generated ' + parsed.length + ' improvement suggestions');
+    } catch (error) {
+      // Fallback to simple format
+      setCritiquePoints([]);
+      setCritique(generatedCritique);
+    }
   };
 
   const elaboratePost = async () => {
@@ -247,6 +317,83 @@ ${post}`;
   const regeneratePost = async () => {
     if (!topic) return;
     await generatePost();
+  };
+
+  // Interactive content management functions
+  const addHashtagToPost = (hashtag) => {
+    if (!addedHashtags.includes(hashtag)) {
+      const newHashtags = [...addedHashtags, hashtag];
+      setAddedHashtags(newHashtags);
+      
+      // Add hashtag to post content
+      const hashtagText = '\n\n' + newHashtags.join(' ');
+      const postWithoutHashtags = post.replace(/\n\n#\w+(\s#\w+)*/g, '');
+      setPost(postWithoutHashtags + hashtagText);
+      
+      // Auto-scroll to post
+      setTimeout(() => {
+        document.querySelector('.generated-post')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  };
+
+  const removeHashtagFromPost = (hashtag) => {
+    const newHashtags = addedHashtags.filter(h => h !== hashtag);
+    setAddedHashtags(newHashtags);
+    
+    // Update post content
+    const postWithoutHashtags = post.replace(/\n\n#\w+(\s#\w+)*/g, '');
+    const hashtagText = newHashtags.length > 0 ? '\n\n' + newHashtags.join(' ') : '';
+    setPost(postWithoutHashtags + hashtagText);
+  };
+
+  const addEmojiToPost = (emoji) => {
+    if (!addedEmojis.includes(emoji)) {
+      const newEmojis = [...addedEmojis, emoji];
+      setAddedEmojis(newEmojis);
+      
+      // Add emoji to beginning of post
+      const emojiText = newEmojis.join(' ') + ' ';
+      const postWithoutEmojis = post.replace(/^[\p{Emoji}\s]+/u, '');
+      setPost(emojiText + postWithoutEmojis);
+      
+      // Auto-scroll to post
+      setTimeout(() => {
+        document.querySelector('.generated-post')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  };
+
+  const removeEmojiFromPost = (emoji) => {
+    const newEmojis = addedEmojis.filter(e => e !== emoji);
+    setAddedEmojis(newEmojis);
+    
+    // Update post content
+    const postWithoutEmojis = post.replace(/^[\p{Emoji}\s]+/u, '');
+    const emojiText = newEmojis.length > 0 ? newEmojis.join(' ') + ' ' : '';
+    setPost(emojiText + postWithoutEmojis);
+  };
+
+  const applyCritiqueSuggestions = async () => {
+    if (!post || critiquePoints.length === 0) return;
+    
+    const suggestions = critiquePoints.map(point => point.suggestion).join('; ');
+    const prompt = `You are an expert content editor. Apply these specific improvements to the LinkedIn post: ${suggestions}
+
+Return ONLY the improved post content, no explanations.
+
+Original post:
+${post}`;
+    
+    const improvedPost = await callGeminiAPI(prompt, 'applyCritique');
+    if (improvedPost && !improvedPost.startsWith('Error:')) {
+      await typewriterEffect(improvedPost, setPost);
+      
+      // Auto-scroll to post
+      setTimeout(() => {
+        document.querySelector('.generated-post')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
   };
 
   const toggleTone = (toneValue) => {
@@ -809,7 +956,7 @@ ${post}`;
                 <div className="space-y-6 animate-fade-in-up mt-4">
                   
                   {/* Generated Post */}
-                  <div className="relative group">
+                  <div className="relative group generated-post">
                     <h2 className={`text-2xl font-bold ${isDarkMode ? 'bg-gradient-to-r from-yellow-400 to-amber-400' : 'bg-gradient-to-r from-amber-700 to-yellow-800'} bg-clip-text text-transparent tracking-tight mb-6 flex items-center gap-3`}>
                       <Sparkles className={`w-6 h-6 ${isDarkMode ? 'text-yellow-400' : 'text-amber-700'}`} />
                       Generated Content
@@ -929,26 +1076,132 @@ ${post}`;
 
                   {/* Output Cards */}
                   <div className="space-y-4">
-                    <OutputCard title="Suggested Hashtags" loadingState="hashtags" content={hashtags}>
-                      <div className="relative group">
-                        <p className={`${isDarkMode ? 'text-yellow-400 bg-black/30' : 'text-amber-700 bg-white/60'} font-mono text-base leading-relaxed pr-16 p-6 rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>{hashtags}</p>
-                        <button 
-                          onClick={() => copyToClipboard(hashtags, 'hashtags')} 
-                          className={`absolute top-4 right-4 flex items-center gap-2 text-xs ${isDarkMode ? 'text-slate-400 hover:text-white bg-black/50' : 'text-stone-500 hover:text-stone-800 bg-white/70'} transition-all duration-300 hover:scale-105 px-3 py-2 rounded-lg`}
-                        >
-                          {copied === 'hashtags' ? <Check className={`w-4 h-4 ${isDarkMode ? 'text-yellow-400' : 'text-amber-600'}`} /> : <Copy className="w-4 h-4" />}
-                          <span className="font-medium">Copy</span>
-                        </button>
+                    {/* Interactive Hashtags */}
+                    <OutputCard title="Interactive Hashtags" loadingState="hashtags" content={hashtags}>
+                      <div className="space-y-4">
+                        {hashtagList.length > 0 && (
+                          <div className="grid grid-cols-2 gap-3">
+                            {hashtagList.map((item, index) => (
+                              <div key={index} className={`flex items-center justify-between p-4 rounded-xl ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white/60 border-stone-300/30'} border transition-all duration-300 hover:scale-[1.02]`}>
+                                <div className="flex items-center gap-3">
+                                  <span className={`${isDarkMode ? 'text-yellow-400' : 'text-amber-700'} font-mono text-sm`}>{item.hashtag}</span>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-white/10 text-slate-400' : 'bg-stone-200/50 text-stone-600'}`}>{item.category}</span>
+                                </div>
+                                {addedHashtags.includes(item.hashtag) ? (
+                                  <button
+                                    onClick={() => removeHashtagFromPost(item.hashtag)}
+                                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${isDarkMode ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-600/20 text-red-700 hover:bg-red-600/30'}`}
+                                  >
+                                    Remove
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => addHashtagToPost(item.hashtag)}
+                                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${isDarkMode ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-amber-600/20 text-amber-700 hover:bg-amber-600/30'}`}
+                                  >
+                                    Add
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {hashtagList.length === 0 && hashtags && (
+                          <div className="relative group">
+                            <p className={`${isDarkMode ? 'text-yellow-400 bg-black/30' : 'text-amber-700 bg-white/60'} font-mono text-base leading-relaxed pr-16 p-6 rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>{hashtags}</p>
+                            <button 
+                              onClick={() => copyToClipboard(hashtags, 'hashtags')} 
+                              className={`absolute top-4 right-4 flex items-center gap-2 text-xs ${isDarkMode ? 'text-slate-400 hover:text-white bg-black/50' : 'text-stone-500 hover:text-stone-800 bg-white/70'} transition-all duration-300 hover:scale-105 px-3 py-2 rounded-lg`}
+                            >
+                              {copied === 'hashtags' ? <Check className={`w-4 h-4 ${isDarkMode ? 'text-yellow-400' : 'text-amber-600'}`} /> : <Copy className="w-4 h-4" />}
+                              <span className="font-medium">Copy</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </OutputCard>
                     
-                    <OutputCard title="Suggested Emojis" loadingState="emojis" content={emojis}>
-                      <div className={`text-4xl ${isDarkMode ? 'bg-black/30' : 'bg-white/60'} p-8 rounded-xl text-center border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>{emojis}</div>
+                    {/* Interactive Emojis */}
+                    <OutputCard title="Interactive Emojis" loadingState="emojis" content={emojis}>
+                      <div className="space-y-4">
+                        {emojiList.length > 0 && (
+                          <div className="grid grid-cols-3 gap-3">
+                            {emojiList.map((item, index) => (
+                              <div key={index} className={`flex flex-col items-center gap-3 p-4 rounded-xl ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white/60 border-stone-300/30'} border transition-all duration-300 hover:scale-[1.02]`}>
+                                <div className="text-center">
+                                  <div className="text-3xl mb-2">{item.emoji}</div>
+                                  <div className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-stone-600'} mb-1`}>{item.description}</div>
+                                  <div className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-white/10 text-slate-500' : 'bg-stone-200/50 text-stone-500'}`}>{item.context}</div>
+                                </div>
+                                {addedEmojis.includes(item.emoji) ? (
+                                  <button
+                                    onClick={() => removeEmojiFromPost(item.emoji)}
+                                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${isDarkMode ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-600/20 text-red-700 hover:bg-red-600/30'}`}
+                                  >
+                                    Remove
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => addEmojiToPost(item.emoji)}
+                                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${isDarkMode ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-amber-600/20 text-amber-700 hover:bg-amber-600/30'}`}
+                                  >
+                                    Add
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {emojiList.length === 0 && emojis && (
+                          <div className={`text-4xl ${isDarkMode ? 'bg-black/30' : 'bg-white/60'} p-8 rounded-xl text-center border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>{emojis}</div>
+                        )}
+                      </div>
                     </OutputCard>
 
-                    <OutputCard title="AI Content Analysis" loadingState="critique" content={critique}>
-                      <div className={`${isDarkMode ? 'bg-black/30' : 'bg-white/60'} p-8 rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
-                        <p className={`${isDarkMode ? 'text-slate-300' : 'text-stone-700'} whitespace-pre-wrap text-base leading-relaxed`}>{critique}</p>
+                    {/* Interactive AI Critique */}
+                    <OutputCard title="AI Content Analysis & Improvements" loadingState="critique" content={critique}>
+                      <div className="space-y-4">
+                        {critiquePoints.length > 0 && (
+                          <>
+                            <div className="space-y-3">
+                              {critiquePoints.map((point, index) => (
+                                <div key={index} className={`p-4 rounded-xl ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white/60 border-stone-300/30'} border`}>
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                          point.priority === 'high' 
+                                            ? (isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-600/20 text-red-700')
+                                            : point.priority === 'medium'
+                                            ? (isDarkMode ? 'bg-yellow-500/20 text-yellow-400' : 'bg-amber-600/20 text-amber-700')
+                                            : (isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-600/20 text-green-700')
+                                        }`}>
+                                          {point.priority} priority
+                                        </span>
+                                      </div>
+                                      <h4 className={`font-medium ${isDarkMode ? 'text-slate-200' : 'text-stone-700'} mb-2`}>{point.issue}</h4>
+                                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-stone-600'}`}>{point.suggestion}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <PremiumButton
+                              onClick={applyCritiqueSuggestions}
+                              disabled={loading}
+                              loadingState="applyCritique"
+                              icon={<Sparkles />}
+                              variant="accent"
+                            >
+                              Apply All Suggestions
+                            </PremiumButton>
+                          </>
+                        )}
+                        {critiquePoints.length === 0 && critique && (
+                          <div className={`${isDarkMode ? 'bg-black/30' : 'bg-white/60'} p-8 rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
+                            <p className={`${isDarkMode ? 'text-slate-300' : 'text-stone-700'} whitespace-pre-wrap text-base leading-relaxed`}>{critique}</p>
+                          </div>
+                        )}
                       </div>
                     </OutputCard>
                   </div>
