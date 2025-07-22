@@ -26,16 +26,25 @@ export default function App() {
 
   // Theme persistence
   useEffect(() => {
-    const savedTheme = localStorage.getItem('postpal-theme');
-    if (savedTheme) {
-      setIsDarkMode(savedTheme === 'dark');
+    // Note: localStorage might not persist in all sandboxed environments.
+    try {
+        const savedTheme = localStorage.getItem('postpal-theme');
+        if (savedTheme) {
+          setIsDarkMode(savedTheme === 'dark');
+        }
+    } catch (e) {
+        console.warn("Could not access localStorage for theme persistence.");
     }
   }, []);
 
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
-    localStorage.setItem('postpal-theme', newTheme ? 'dark' : 'light');
+    try {
+        localStorage.setItem('postpal-theme', newTheme ? 'dark' : 'light');
+    } catch (e) {
+        console.warn("Could not access localStorage for theme persistence.");
+    }
   };
 
   const tones = [
@@ -51,10 +60,18 @@ export default function App() {
     { value: 'Authoritative', emoji: '👑', preview: 'Expert, commanding, influential', color: 'from-violet-500 to-purple-600' }
   ];
 
-  const callGeminiAPI = async (prompt, loadingState) => {
+  /**
+   * Calls the Gemini API to generate content.
+   * @param {string} prompt - The prompt to send to the API.
+   * @param {string} loadingState - The state to set for loading indicators.
+   * @param {object|null} schema - An optional JSON schema for structured responses.
+   * @returns {Promise<string>} - The text response from the API.
+   */
+  const callGeminiAPI = async (prompt, loadingState, schema = null) => {
     setLoading(loadingState);
-    const apiKey = "AIzaSyDSU9YUQVoFPftARc4TpEI4uUilvPcMOcc";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // The API key is left empty as it will be handled by the execution environment.
+    const apiKey = ""; 
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
     const payload = {
       contents: [{
@@ -63,6 +80,14 @@ export default function App() {
         }]
       }]
     };
+
+    // If a schema is provided, configure the model for a JSON response.
+    if (schema) {
+        payload.generationConfig = {
+            responseMimeType: "application/json",
+            responseSchema: schema
+        };
+    }
 
     const maxRetries = 3;
     const baseDelay = 1000;
@@ -96,11 +121,15 @@ export default function App() {
         }
         
         const result = await response.json();
-        if (result.candidates && result.candidates.length > 0 && result.candidates[0].content) {
+        if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
           setLoading(null);
           return result.candidates[0].content.parts[0].text.trim();
         } else {
           console.error("Unexpected API response structure:", result);
+          // Check for safety ratings or other reasons for an empty response
+          if (result.candidates && result.candidates.length > 0 && result.candidates[0].finishReason) {
+             throw new Error(`Content generation failed. Reason: ${result.candidates[0].finishReason}`);
+          }
           throw new Error('Could not extract content from API response.');
         }
       } catch (error) {
@@ -117,6 +146,7 @@ export default function App() {
       }
     }
   };
+
 
   const clearOutputs = () => {
     setHashtags('');
@@ -161,50 +191,71 @@ export default function App() {
 
   const generateHashtags = async () => {
     if (!post) return;
-    const prompt = `You are a social media hashtag expert. Generate 10-15 relevant, trending hashtags for LinkedIn content. Return ONLY a array of hashtag objects with this exact format:
-[
-  {"hashtag": "#leadership", "category": "professional"},
-  {"hashtag": "#innovation", "category": "trending"},
-  {"hashtag": "#growth", "category": "engagement"}
-]
 
-Categories should be: professional, trending, engagement, industry, or niche.
+    const hashtagSchema = {
+        type: "ARRAY",
+        items: {
+            type: "OBJECT",
+            properties: {
+                "hashtag": { "type": "STRING", "description": "The hashtag text, starting with #" },
+                "category": { "type": "STRING", "description": "The category of the hashtag" }
+            },
+            required: ["hashtag", "category"]
+        }
+    };
+
+    const prompt = `You are a social media hashtag expert. Generate 10-15 relevant, trending hashtags for a LinkedIn post.
+Categories should be one of: professional, trending, engagement, industry, or niche.
+Ensure the output is a valid JSON array of objects matching the provided schema.
 Post content: ${post}`;
-    const generatedHashtags = await callGeminiAPI(prompt, 'hashtags');
+    const generatedHashtags = await callGeminiAPI(prompt, 'hashtags', hashtagSchema);
     
     try {
       const parsed = JSON.parse(generatedHashtags);
       setHashtagList(parsed);
       setHashtags('Generated ' + parsed.length + ' hashtags');
     } catch (error) {
-      // Fallback to simple format
-      const simpleHashtags = generatedHashtags.split(' ').filter(tag => tag.startsWith('#')).map(tag => ({
-        hashtag: tag,
+      console.error("Failed to parse hashtags JSON:", error);
+      console.error("Received text:", generatedHashtags);
+      // Fallback to simple format if JSON parsing still fails
+      const simpleHashtags = generatedHashtags.split(/\s+/).filter(tag => tag.startsWith('#')).map(tag => ({
+        hashtag: tag.replace(/[^#\w]/g, ''), // Sanitize hashtag
         category: 'general'
       }));
       setHashtagList(simpleHashtags);
-      setHashtags(generatedHashtags);
+      setHashtags('Could not parse structured hashtags. Displaying raw suggestions.');
     }
   };
 
   const generateEmojis = async () => {
     if (!post) return;
-    const prompt = `You are an emoji expert for social media. Generate 8-12 contextually appropriate emojis for LinkedIn content. Return ONLY a JSON array of emoji objects with this exact format:
-[
-  {"emoji": "💼", "description": "Professional", "context": "business"},
-  {"emoji": "🚀", "description": "Growth", "context": "motivation"},
-  {"emoji": "💡", "description": "Ideas", "context": "innovation"}
-]
+    
+    const emojiSchema = {
+        type: "ARRAY",
+        items: {
+            type: "OBJECT",
+            properties: {
+                "emoji": { "type": "STRING", "description": "The emoji character" },
+                "description": { "type": "STRING", "description": "A brief description of the emoji's meaning" },
+                "context": { "type": "STRING", "description": "The context where the emoji is relevant" }
+            },
+            required: ["emoji", "description", "context"]
+        }
+    };
 
-Context should be: business, motivation, celebration, innovation, or engagement.
+    const prompt = `You are an emoji expert for social media. Generate 8-12 contextually appropriate emojis for a LinkedIn post.
+Context should be one of: business, motivation, celebration, innovation, or engagement.
+Ensure the output is a valid JSON array of objects matching the provided schema.
 Post content: ${post}`;
-    const generatedEmojis = await callGeminiAPI(prompt, 'emojis');
+    const generatedEmojis = await callGeminiAPI(prompt, 'emojis', emojiSchema);
     
     try {
       const parsed = JSON.parse(generatedEmojis);
       setEmojiList(parsed);
       setEmojis('Generated ' + parsed.length + ' emojis');
     } catch (error) {
+      console.error("Failed to parse emojis JSON:", error);
+      console.error("Received text:", generatedEmojis);
       // Fallback to simple format
       const simpleEmojis = generatedEmojis.split('').filter(char => /\p{Emoji}/u.test(char)).map(emoji => ({
         emoji: emoji,
@@ -212,7 +263,7 @@ Post content: ${post}`;
         context: 'general'
       }));
       setEmojiList(simpleEmojis);
-      setEmojis(generatedEmojis);
+      setEmojis('Could not parse structured emojis. Displaying raw suggestions.');
     }
   };
 
@@ -241,25 +292,36 @@ ${post}`;
 
   const critiquePost = async () => {
     if (!post) return;
-    const prompt = `You are a LinkedIn growth expert. Analyze this post for engagement potential, clarity, and tone. Return ONLY a JSON array of critique objects with this exact format:
-[
-  {"issue": "Hook could be stronger", "suggestion": "Start with a question or surprising statistic", "priority": "high"},
-  {"issue": "Missing call-to-action", "suggestion": "Add 'What's your experience?' at the end", "priority": "medium"},
-  {"issue": "Too formal tone", "suggestion": "Use more conversational language", "priority": "low"}
-]
 
-Priority should be: high, medium, or low.
+    const critiqueSchema = {
+        type: "ARRAY",
+        items: {
+            type: "OBJECT",
+            properties: {
+                "issue": { "type": "STRING", "description": "The identified issue in the post" },
+                "suggestion": { "type": "STRING", "description": "A concrete suggestion for improvement" },
+                "priority": { "type": "STRING", "description": "The priority of the suggestion (high, medium, or low)" }
+            },
+            required: ["issue", "suggestion", "priority"]
+        }
+    };
+
+    const prompt = `You are a LinkedIn growth expert. Analyze this post for engagement potential, clarity, and tone. Provide actionable feedback.
+Priority should be one of: high, medium, or low.
+Ensure the output is a valid JSON array of objects matching the provided schema.
 Post content: ${post}`;
-    const generatedCritique = await callGeminiAPI(prompt, 'critique');
+    const generatedCritique = await callGeminiAPI(prompt, 'critique', critiqueSchema);
     
     try {
       const parsed = JSON.parse(generatedCritique);
       setCritiquePoints(parsed);
       setCritique('Generated ' + parsed.length + ' improvement suggestions');
     } catch (error) {
+      console.error("Failed to parse critique JSON:", error);
+      console.error("Received text:", generatedCritique);
       // Fallback to simple format
       setCritiquePoints([]);
-      setCritique(generatedCritique);
+      setCritique(generatedCritique); // Show the raw text if parsing fails
     }
   };
 
@@ -295,23 +357,39 @@ ${post}`;
   };
 
   const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text).then(() => {
+    // navigator.clipboard is preferred but can fail in sandboxed environments
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(type);
+            setTimeout(() => setCopied(null), 2500);
+        }).catch(err => {
+            console.warn("Clipboard API failed, falling back to execCommand.", err);
+            copyFallback(text, type);
+        });
+    } else {
+        copyFallback(text, type);
+    }
+  };
+
+  // Fallback for copying to clipboard
+  const copyFallback = (text, type) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed"; // Prevent scrolling to bottom of page in MS Edge.
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
       setCopied(type);
       setTimeout(() => setCopied(null), 2500);
-    }).catch(() => {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        setCopied(type);
-        setTimeout(() => setCopied(null), 2500);
-      } catch (err) {
-        console.error('Failed to copy text: ', err);
-      }
-      document.body.removeChild(textArea);
-    });
+    } catch (err) {
+      console.error('Fallback copy failed: ', err);
+    }
+    document.body.removeChild(textArea);
   };
 
   const regeneratePost = async () => {
@@ -377,13 +455,8 @@ ${post}`;
   const applyCritiqueSuggestions = async () => {
     if (!post || critiquePoints.length === 0) return;
     
-    const suggestions = critiquePoints.map(point => point.suggestion).join('; ');
-    const prompt = `You are an expert content editor. Apply these specific improvements to the LinkedIn post: ${suggestions}
-
-Return ONLY the improved post content, no explanations.
-
-Original post:
-${post}`;
+    const suggestions = critiquePoints.map(point => `- ${point.issue}: ${point.suggestion}`).join('\n');
+    const prompt = `You are an expert content editor. Apply these specific improvements to the LinkedIn post:\n${suggestions}\n\nReturn ONLY the improved post content, no explanations.\n\nOriginal post:\n${post}`;
     
     const improvedPost = await callGeminiAPI(prompt, 'applyCritique');
     if (improvedPost && !improvedPost.startsWith('Error:')) {
@@ -515,12 +588,12 @@ ${post}`;
         /* Dark Mode Background */
         .dark-premium-bg {
           background: linear-gradient(135deg, 
-            #000000 0%,     /* Pure Black */
-            #0f172a 20%,    /* Dark Blue */
-            #1e293b 40%,    /* Slate Blue */
-            #0f172a 60%,    /* Dark Blue */
-            #000814 80%,    /* Navy Black */
-            #000000 100%    /* Pure Black */
+            #000000 0%,   /* Pure Black */
+            #0f172a 20%,   /* Dark Blue */
+            #1e293b 40%,   /* Slate Blue */
+            #0f172a 60%,   /* Dark Blue */
+            #000814 80%,   /* Navy Black */
+            #000000 100%   /* Pure Black */
           );
           background-size: 400% 400%;
           animation: darkGradientFlow 12s ease-in-out infinite;
@@ -529,11 +602,11 @@ ${post}`;
         /* Light Mode Background */
         .light-premium-bg {
           background: linear-gradient(135deg, 
-            #f5f5f4 0%,     /* Stone 100 */
-            #e7e5e4 25%,    /* Stone 200 */
-            #d6d3d1 50%,    /* Stone 300 */
-            #e7e5e4 75%,    /* Stone 200 */
-            #f5f5f4 100%    /* Stone 100 */
+            #f5f5f4 0%,   /* Stone 100 */
+            #e7e5e4 25%,   /* Stone 200 */
+            #d6d3d1 50%,   /* Stone 300 */
+            #e7e5e4 75%,   /* Stone 200 */
+            #f5f5f4 100%   /* Stone 100 */
           );
           background-size: 400% 400%;
           animation: lightGradientFlow 12s ease-in-out infinite;
@@ -814,12 +887,15 @@ ${post}`;
           opacity: 0;
           transform: translateX(20px);
           pointer-events: none;
+          max-height: 0;
+          overflow: hidden;
         }
         
         .section-visible {
           opacity: 1;
           transform: translateX(0);
           pointer-events: auto;
+          max-height: 10000px; /* Large value to allow content to expand */
         }
         
         * {
@@ -827,7 +903,7 @@ ${post}`;
         }
       `}</style>
       
-      <div className={`min-h-screen w-full ${isDarkMode ? 'dark-premium-bg text-slate-100 dark-particles' : 'light-premium-bg text-stone-800 light-particles'} p-8 flex items-center justify-center overflow-hidden relative`}>
+      <div className={`min-h-screen w-full ${isDarkMode ? 'dark-premium-bg text-slate-100 dark-particles' : 'light-premium-bg text-stone-800 light-particles'} p-4 sm:p-8 flex items-center justify-center overflow-hidden relative`}>
         
         {/* Theme Toggle Button */}
         <button
@@ -842,7 +918,7 @@ ${post}`;
 
         {/* Main Content */}
         <main className="w-full max-w-4xl mx-auto z-10 relative">
-          <div className={`${isDarkMode ? 'dark-glass' : 'light-glass'} rounded-3xl p-12 animate-slide-in-center`}>
+          <div className={`${isDarkMode ? 'dark-glass' : 'light-glass'} rounded-3xl p-6 sm:p-12 animate-slide-in-center`}>
             
             {/* Header */}
             <header className="text-center mb-8">
@@ -850,11 +926,11 @@ ${post}`;
                 <div className={`p-4 ${isDarkMode ? 'bg-gradient-to-br from-yellow-500/20 to-amber-600/20' : 'bg-gradient-to-br from-amber-600/20 to-yellow-700/20'} rounded-2xl backdrop-blur-sm border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
                   <Zap className={`w-10 h-10 ${isDarkMode ? 'text-yellow-400' : 'text-amber-700'}`} />
                 </div>
-                <h1 className={`text-6xl font-bold ${isDarkMode ? 'bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500' : 'bg-gradient-to-r from-amber-700 via-yellow-800 to-amber-800'} bg-clip-text text-transparent tracking-tight`}>
+                <h1 className={`text-5xl sm:text-6xl font-bold ${isDarkMode ? 'bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500' : 'bg-gradient-to-r from-amber-700 via-yellow-800 to-amber-800'} bg-clip-text text-transparent tracking-tight`}>
                   PostPal AI
                 </h1>
               </div>
-              <p className={`${isDarkMode ? 'text-slate-300' : 'text-stone-600'} text-xl leading-relaxed font-medium max-w-2xl mx-auto`}>
+              <p className={`${isDarkMode ? 'text-slate-300' : 'text-stone-600'} text-lg sm:text-xl leading-relaxed font-medium max-w-2xl mx-auto`}>
                 Craft Compelling LinkedIn Content, Instantly.
               </p>
             </header>
@@ -891,8 +967,8 @@ ${post}`;
                     <BarChart3 className={`w-4 h-4 ${isDarkMode ? 'text-amber-400' : 'text-yellow-700'}`} />
                     Tone Selection
                   </div>
-                  <div className={`${isDarkMode ? 'dark-glass' : 'light-glass'} rounded-2xl p-8 border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
-                    <div className={`grid grid-cols-2 gap-4 max-h-80 overflow-y-auto luxury-scrollbar ${isDarkMode ? 'dark-scrollbar' : 'light-scrollbar'}`}>
+                  <div className={`${isDarkMode ? 'dark-glass' : 'light-glass'} rounded-2xl p-4 sm:p-8 border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
+                    <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-80 overflow-y-auto luxury-scrollbar ${isDarkMode ? 'dark-scrollbar' : 'light-scrollbar'}`}>
                       {tones.map((toneOption) => (
                         <button
                           key={toneOption.value}
@@ -972,7 +1048,7 @@ ${post}`;
                       } focus:outline-none transition-all duration-300 resize-y text-lg leading-relaxed backdrop-blur-xl shadow-xl`}
                     />
                     
-                    <div className={`absolute bottom-6 right-6 flex items-center gap-4 text-sm ${isDarkMode ? 'text-slate-300 bg-black/50' : 'text-stone-600 bg-white/80'} backdrop-blur-sm px-6 py-3 rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
+                    <div className={`absolute bottom-6 right-6 flex items-center gap-2 sm:gap-4 text-sm ${isDarkMode ? 'text-slate-300 bg-black/50' : 'text-stone-600 bg-white/80'} backdrop-blur-sm px-4 py-3 rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-stone-300/30'}`}>
                       <span className="font-medium flex items-center gap-2">
                         <span className={`w-2 h-2 ${isDarkMode ? 'bg-yellow-400' : 'bg-amber-600'} rounded-full`}></span>
                         {wordCount} words
@@ -985,7 +1061,7 @@ ${post}`;
                           <Check className={`w-4 h-4 ${isDarkMode ? 'text-yellow-400' : 'text-amber-600'}`} /> : 
                           <Copy className="w-4 h-4" />
                         }
-                        <span className="font-medium">
+                        <span className="font-medium hidden sm:inline">
                           {copied === 'post' ? 'Copied!' : 'Copy'}
                         </span>
                       </button>
@@ -995,7 +1071,7 @@ ${post}`;
                         className={`flex items-center gap-2 ${isDarkMode ? 'hover:text-white' : 'hover:text-stone-800'} transition-all duration-300 hover:scale-105 px-3 py-1 rounded-lg ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-stone-200/50'} disabled:opacity-50`}
                       >
                         <RefreshCw className="w-4 h-4" />
-                        <span className="font-medium">Regenerate</span>
+                        <span className="font-medium hidden sm:inline">Regenerate</span>
                       </button>
                     </div>
                   </div>
@@ -1030,7 +1106,7 @@ ${post}`;
                   </div>
 
                   {/* Action Buttons Grid */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <PremiumButton onClick={refinePost} loadingState="refine" icon={<Edit3 />}>
                       Refine Content
                     </PremiumButton>
@@ -1080,10 +1156,10 @@ ${post}`;
                     <OutputCard title="Interactive Hashtags" loadingState="hashtags" content={hashtags}>
                       <div className="space-y-4">
                         {hashtagList.length > 0 && (
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {hashtagList.map((item, index) => (
                               <div key={index} className={`flex items-center justify-between p-4 rounded-xl ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white/60 border-stone-300/30'} border transition-all duration-300 hover:scale-[1.02]`}>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 flex-wrap">
                                   <span className={`${isDarkMode ? 'text-yellow-400' : 'text-amber-700'} font-mono text-sm`}>{item.hashtag}</span>
                                   <span className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-white/10 text-slate-400' : 'bg-stone-200/50 text-stone-600'}`}>{item.category}</span>
                                 </div>
@@ -1125,7 +1201,7 @@ ${post}`;
                     <OutputCard title="Interactive Emojis" loadingState="emojis" content={emojis}>
                       <div className="space-y-4">
                         {emojiList.length > 0 && (
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {emojiList.map((item, index) => (
                               <div key={index} className={`flex flex-col items-center gap-3 p-4 rounded-xl ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white/60 border-stone-300/30'} border transition-all duration-300 hover:scale-[1.02]`}>
                                 <div className="text-center">
