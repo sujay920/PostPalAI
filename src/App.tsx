@@ -61,7 +61,7 @@ export default function App() {
   ];
 
   /**
-   * Calls the Gemini API to generate content.
+   * Calls a secure backend proxy to generate content from the Gemini API.
    * @param {string} prompt - The prompt to send to the API.
    * @param {string} loadingState - The state to set for loading indicators.
    * @param {object|null} schema - An optional JSON schema for structured responses.
@@ -69,32 +69,22 @@ export default function App() {
    */
   const callGeminiAPI = async (prompt, loadingState, schema = null) => {
     setLoading(loadingState);
-    // The API key is left empty as it will be handled by the execution environment.
-    const apiKey = ""; 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
-    const payload = {
-      contents: [{
-        parts: [{
-          text: prompt
-        }]
-      }]
-    };
+    // This is the secure way: Call your own backend, which then calls the Gemini API.
+    // The API key should be stored securely on your server, not in the client-side code.
+    const proxyApiUrl = '/api/generate-content'; // Example backend endpoint
 
-    // If a schema is provided, configure the model for a JSON response.
-    if (schema) {
-        payload.generationConfig = {
-            responseMimeType: "application/json",
-            responseSchema: schema
-        };
-    }
+    const payload = {
+      prompt,
+      schema
+    };
 
     const maxRetries = 3;
     const baseDelay = 1000;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch(proxyApiUrl, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json'
@@ -105,7 +95,7 @@ export default function App() {
         if (response.status === 503) {
           if (attempt < maxRetries) {
             const delay = baseDelay * Math.pow(2, attempt);
-            console.log(`Gemini API overloaded, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries + 1})`);
+            console.log(`API service overloaded, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries + 1})`);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           } else {
@@ -117,7 +107,7 @@ export default function App() {
         if (!response.ok) {
            if (response.status === 403) {
                 console.error("API Error Response (403):", await response.text());
-                throw new Error(`API request failed with status 403 (Forbidden). This often means the API key is missing, invalid, or doesn't have the required permissions for the Gemini API. Please check your API key setup.`);
+                throw new Error(`API request failed with status 403 (Forbidden). This indicates a problem with the backend API key. Please ensure it's configured correctly on the server.`);
             }
           const errorBody = await response.text();
           console.error("API Error Response:", errorBody);
@@ -125,20 +115,16 @@ export default function App() {
         }
         
         const result = await response.json();
-        if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+        if (result.text) {
           setLoading(null);
-          return result.candidates[0].content.parts[0].text.trim();
+          return result.text.trim();
         } else {
-          console.error("Unexpected API response structure:", result);
-          // Check for safety ratings or other reasons for an empty response
-          if (result.candidates && result.candidates.length > 0 && result.candidates[0].finishReason) {
-             throw new Error(`Content generation failed. Reason: ${result.candidates[0].finishReason}`);
-          }
+          console.error("Unexpected API response structure from proxy:", result);
           throw new Error('Could not extract content from API response.');
         }
       } catch (error) {
         if (attempt === maxRetries) {
-          console.error("Error calling Gemini API:", error);
+          console.error("Error calling backend proxy:", error);
           setLoading(null);
           return `Error: ${error.message}. Please check the console for details.`;
         }
