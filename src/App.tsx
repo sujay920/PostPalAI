@@ -161,7 +161,7 @@ export default function App() {
 
   const generateHashtags = async () => {
     if (!post) return;
-    const prompt = `You are a social media hashtag expert. Generate 10-15 relevant, trending hashtags for LinkedIn content. Return ONLY a JSON array of hashtag objects with this exact format:
+    const prompt = `You are a social media hashtag expert. Generate 10-15 relevant, trending hashtags for LinkedIn content. Return ONLY a array of hashtag objects with this exact format:
 [
   {"hashtag": "#leadership", "category": "professional"},
   {"hashtag": "#innovation", "category": "trending"},
