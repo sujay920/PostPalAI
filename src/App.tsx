@@ -154,6 +154,10 @@ export default function App() {
     
     if (generatedPost && !generatedPost.startsWith('Error:')) {
       await typewriterEffect(generatedPost, setPost);
+      
+      // Auto-generate hashtags and critique after content generation
+      generateHashtags();
+      critiquePost();
     } else {
       setPost(generatedPost);
     }
