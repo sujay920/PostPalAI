@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Sparkles, Zap, RefreshCw, Image, Edit3, BarChart3, Sun, Moon } from 'lucide-react';
+import { Copy, Check, Sparkles, Zap, RefreshCw, Image, CreditCard as Edit3, BarChart3, Sun, Moon } from 'lucide-react';
 
 // Main App Component
 export default function App() {
