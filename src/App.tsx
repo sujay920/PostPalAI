@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Check, Sparkles, Zap, RefreshCw, Image, CreditCard as Edit3, BarChart3, Sun, Moon } from 'lucide-react';
+import { DemoOne } from './components/demo';
 
 // Main App Component
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
   const [hashtagList, setHashtagList] = useState([]);
   const [emojiList, setEmojiList] = useState([]);
   const [critiquePoints, setCritiquePoints] = useState([]);
+  const [showGlassDemo, setShowGlassDemo] = useState(false);
 
   // Theme persistence
   useEffect(() => {
@@ -1332,6 +1334,25 @@ ${post}`;
             )}
           </div>
         </main>
+
+        {/* Glass Demo Toggle Button */}
+        <button
+          onClick={() => setShowGlassDemo(!showGlassDemo)}
+          className={`fixed bottom-4 left-4 z-50 px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+            isDarkMode
+              ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-400 hover:to-yellow-400'
+              : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-400 hover:to-purple-400'
+          }`}
+        >
+          {showGlassDemo ? 'Hide Glass Demo' : 'Show Glass Demo'}
+        </button>
+
+        {/* Glass Demo Overlay */}
+        {showGlassDemo && (
+          <div className="fixed inset-0 z-40">
+            <DemoOne />
+          </div>
+        )}
       </div>
     </>
   );
