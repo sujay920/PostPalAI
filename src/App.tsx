@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Sparkles, Zap, RefreshCw, Image, Edit3, BarChart3, Sun, Moon } from 'lucide-react';
-import { GlassButton, GlassFilter } from './components/ui/liquid-glass';
+import { Copy, Check, Sparkles, Zap, RefreshCw, Image, CreditCard as Edit3, BarChart3, Sun, Moon } from 'lucide-react';
 
 // Main App Component
 export default function App() {
@@ -912,8 +911,6 @@ ${post}`;
       
       <div className={`min-h-screen w-full ${isDarkMode ? 'dark-premium-bg text-slate-100 dark-particles' : 'light-premium-bg text-stone-800 light-particles'} p-4 sm:p-8 flex items-center justify-center overflow-hidden relative`}>
         
-        <GlassFilter />
-        
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
@@ -1119,48 +1116,15 @@ ${post}`;
                     <PremiumButton onClick={refinePost} loadingState="refine" icon={<Edit3 />}>
                       Refine Content
                     </PremiumButton>
-                    <GlassButton>
-                      <button
-                        onClick={generateHashtags}
-                        disabled={loading || !post.trim()}
-                        className={`font-medium transition-all duration-200 flex items-center gap-2 ${
-                          loading || !post.trim()
-                            ? 'text-gray-500 cursor-not-allowed'
-                            : 'text-white'
-                        }`}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Generate Hashtags
-                      </button>
-                    </GlassButton>
-                    <GlassButton>
-                      <button
-                        onClick={generateEmojis}
-                        disabled={loading || !post.trim()}
-                        className={`font-medium transition-all duration-200 flex items-center gap-2 ${
-                          loading || !post.trim()
-                            ? 'text-gray-500 cursor-not-allowed'
-                            : 'text-white'
-                        }`}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Suggest Emojis
-                      </button>
-                    </GlassButton>
-                    <GlassButton>
-                      <button
-                        onClick={critiquePost}
-                        disabled={loading || !post.trim()}
-                        className={`font-medium transition-all duration-200 flex items-center gap-2 ${
-                          loading || !post.trim()
-                            ? 'text-gray-500 cursor-not-allowed'
-                            : 'text-white'
-                        }`}
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                        AI Critique
-                      </button>
-                    </GlassButton>
+                    <PremiumButton onClick={generateHashtags} loadingState="hashtags" icon={<Sparkles />}>
+                      Generate Hashtags
+                    </PremiumButton>
+                    <PremiumButton onClick={generateEmojis} loadingState="emojis" icon={<Sparkles />}>
+                      Suggest Emojis
+                    </PremiumButton>
+                    <PremiumButton onClick={critiquePost} loadingState="critique" icon={<BarChart3 />}>
+                      AI Critique
+                    </PremiumButton>
                   </div>
 
                   {/* Customize Content Section */}
@@ -1304,15 +1268,15 @@ ${post}`;
                                 </div>
                               ))}
                             </div>
-                            <GlassButton>
-                              <button
-                                onClick={applyCritiqueSuggestions}
-                                className="font-medium transition-all duration-200 flex items-center gap-2 text-white"
-                              >
-                                <Sparkles className="w-4 h-4" />
-                                Apply All Suggestions
-                              </button>
-                            </GlassButton>
+                            <PremiumButton
+                              onClick={applyCritiqueSuggestions}
+                              disabled={loading}
+                              loadingState="applyCritique"
+                              icon={<Sparkles />}
+                              variant="accent"
+                            >
+                              Apply All Suggestions
+                            </PremiumButton>
                           </>
                         )}
                         {critiquePoints.length === 0 && critique && (
@@ -1372,3 +1336,4 @@ ${post}`;
     </>
   );
 }
+
