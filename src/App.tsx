@@ -72,7 +72,7 @@ export default function App() {
     // WARNING: Storing API keys in client-side code is a security risk.
     // This key is visible to anyone inspecting the web page's source code.
     // For production applications, use a backend proxy to protect your key.
-    const apiKey = "AIzaSyDSU9YUQVoFPftARc4TpEI4uUilvPcMOcc"; 
+    const apiKey = "AIzaSyBBfmztPFH4Q1kqlJKSZp33VZwAsnvUZgU"; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
     const payload = {
